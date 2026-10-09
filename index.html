@@ -443,7 +443,6 @@
     const SUPABASE_URL = "https://vcneretrcmboehngbqjy.supabase.co";
     const SUPABASE_KEY = "sb_publishable_WZU_tUJbkdF9iezNHxepwA_iGdDYffd";
     
-    // Главные владельцы проекта
     const SUPER_ADMINS = [5134404754, 5889214841];
 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -456,6 +455,9 @@
     let adminList = [...SUPER_ADMINS];
     let cart = [];
     let settings = { card_number: '', phone_number: '' };
+    let cachedProducts = null;
+    let cachedOrders = null;
+    let currentTab = 'catalog';
 
     async function init() {
       if (tg?.initDataUnsafe?.user) {
@@ -464,19 +466,34 @@
         localStorage.setItem('shelf_user', JSON.stringify(currentUser));
       }
 
-      await loadAdmins();
-      await loadSettings();
       renderUserHeaderStatus();
 
-      // Проверка прав администратора через таблицу shelf_admins
-      const isAdmin = currentUserId > 0 && adminList.includes(currentUserId);
-      if (isAdmin) {
-        document.getElementById('nav-admin').style.display = 'flex';
-      } else {
-        document.getElementById('nav-admin').style.display = 'none';
-      }
+      // Фоновая загрузка данных для мгновенного отображения без лагов
+      Promise.all([
+        loadAdmins(),
+        loadSettings(),
+        preloadData()
+      ]).then(() => {
+        if (currentUserId > 0 && adminList.includes(currentUserId)) {
+          document.getElementById('nav-admin').style.display = 'flex';
+        } else {
+          document.getElementById('nav-admin').style.display = 'none';
+        }
+        switchTab(currentTab);
+      });
+    }
 
-      switchTab('catalog');
+    async function preloadData() {
+      try {
+        const [prodRes, ordRes] = await Promise.all([
+          db.from('products').select('*').order('created_at', { ascending: false }),
+          db.from('orders').select('*').order('created_at', { ascending: false })
+        ]);
+        if (prodRes.data) cachedProducts = prodRes.data;
+        if (ordRes.data) cachedOrders = ordRes.data;
+      } catch (e) {
+        console.error("Ошибка предзагрузки:", e);
+      }
     }
 
     function renderUserHeaderStatus() {
@@ -509,7 +526,6 @@
           adminList = Array.from(new Set([...SUPER_ADMINS, ...dbAdmins]));
         }
       } catch (e) {
-        console.error("Ошибка загрузки админов из базы:", e);
         adminList = [...SUPER_ADMINS];
       }
     }
@@ -520,13 +536,11 @@
         if (data && data.value) {
           settings = data.value;
         }
-      } catch (e) {
-        console.error("Ошибка настроек:", e);
-      }
+      } catch (e) {}
     }
 
     function showAuthPrompt() {
-      const idStr = prompt("Введите ваш Telegram ID для авторизации (для проверки на ПК):");
+      const idStr = prompt("Введите ваш Telegram ID для авторизации:");
       if (!idStr) return;
       const id = Number(idStr.trim());
       if (isNaN(id) || id <= 0) {
@@ -591,7 +605,8 @@
       document.getElementById('legal-modal').style.display = 'none';
     }
 
-    async function switchTab(tab) {
+    function switchTab(tab) {
+      currentTab = tab;
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       const activeNav = document.getElementById(`nav-${tab}`);
       if (activeNav) activeNav.classList.add('active');
@@ -599,10 +614,8 @@
       const container = document.getElementById('app-content');
 
       if (tab === 'catalog') {
-        container.innerHTML = `<div class="empty-state"><p>Загрузка каталога...</p></div>`;
-        const { data: products, error } = await db.from('products').select('*').order('created_at', { ascending: false });
-        
-        if (error || !products || products.length === 0) {
+        const products = cachedProducts || [];
+        if (products.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
               <div class="empty-icon">✨</div>
@@ -681,9 +694,8 @@
           return;
         }
 
-        container.innerHTML = `<div class="empty-state"><p>Загрузка панели управления...</p></div>`;
-        const { data: orders } = await db.from('orders').select('*').order('created_at', { ascending: false });
-        const { data: products } = await db.from('products').select('*').order('created_at', { ascending: false });
+        const orders = cachedOrders || [];
+        const products = cachedProducts || [];
 
         container.innerHTML = `
           <div class="section-card">
@@ -712,7 +724,7 @@
 
           <div class="section-card">
             <div class="section-title">📦 Управление заказами</div>
-            ${orders?.map(o => `
+            ${orders.map(o => `
               <div style="background:rgba(10, 15, 26, 0.6); border:1px solid var(--card-border); padding:12px; margin-bottom:10px; border-radius:12px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                   <b>Заказ #${o.id}</b>
@@ -740,7 +752,7 @@
 
           <div class="section-card">
             <div class="section-title">🏷 Текущие товары</div>
-            ${products?.map(p => `
+            ${products.map(p => `
               <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(10, 15, 26, 0.6); padding:10px 14px; margin-bottom:8px; border-radius:10px; border:1px solid var(--card-border);">
                 <div>
                   <div style="font-weight:700; color:#fff;">${p.title}</div>
@@ -847,6 +859,7 @@
 
       cart = [];
       document.getElementById('cart-count').innerText = '0';
+      await preloadData(); // обновить кэш заказов
 
       if (method === 'online') {
         document.getElementById('app-content').innerHTML = `
@@ -870,9 +883,9 @@
     async function saveSettings() {
       const card = document.getElementById('set-card').value;
       const phone = document.getElementById('set-phone').value;
-      await db.from('settings').upsert({ key: 'payment_info', value: { card_number: card, phone_number: phone } }, { onConflict: 'key' });
+      settings = { card_number: card, phone_number: phone };
+      await db.from('settings').upsert({ key: 'payment_info', value: settings }, { onConflict: 'key' });
       alert('Реквизиты сохранены!');
-      loadSettings();
     }
 
     function compressImage(file) {
@@ -920,18 +933,21 @@
 
       await db.from('products').insert({ title, price: parseFloat(price), image, description, is_available: true });
       alert('Товар добавлен!');
+      await preloadData();
       switchTab('admin');
     }
 
     async function deleteProduct(id) {
       if (confirm('Удалить этот товар?')) {
         await db.from('products').delete().eq('id', id);
+        await preloadData();
         switchTab('admin');
       }
     }
 
     async function updateOrderStatus(orderId, status) {
       await db.from('orders').update({ status }).eq('id', orderId);
+      await preloadData();
       switchTab('admin');
     }
 
