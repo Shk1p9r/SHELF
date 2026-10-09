@@ -169,6 +169,52 @@
       margin-bottom: 14px;
     }
 
+    .options-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .option-group-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      width: 100%;
+      margin-bottom: -4px;
+    }
+
+    .size-chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .size-chip.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .color-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .color-dot.selected {
+      border-color: #fff;
+      transform: scale(1.15);
+    }
+
     .btn {
       width: 100%;
       padding: 14px;
@@ -340,7 +386,7 @@
       color: #fff;
     }
 
-    input, textarea {
+    input, select, textarea {
       width: 100%;
       padding: 14px;
       margin-bottom: 12px;
@@ -359,7 +405,7 @@
       cursor: pointer;
     }
 
-    input:focus, textarea:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
@@ -446,6 +492,7 @@
     const SUPABASE_KEY = "sb_publishable_WZU_tUJbkdF9iezNHxepwA_iGdDYffd";
     
     const SUPER_ADMINS = [5134404754, 5889214841];
+    const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const tg = window.Telegram?.WebApp;
@@ -461,6 +508,9 @@
     let cachedOrders = [];
     let currentTab = 'catalog';
 
+    // Временное хранение выбранных опций для товаров в каталоге
+    let selectedProductOptions = {};
+
     async function init() {
       if (tg?.initDataUnsafe?.user) {
         currentUser = tg.initDataUnsafe.user;
@@ -470,21 +520,18 @@
 
       renderUserHeaderStatus();
 
-      // Загружаем данные один раз при старте в фоне
       await Promise.all([
         loadAdmins(),
         loadSettings(),
         preloadData()
       ]);
 
-      // Проверяем права админа и выводим кнопку внизу
       if (currentUserId > 0 && adminList.includes(currentUserId)) {
         document.getElementById('nav-admin').style.display = 'flex';
       } else {
         document.getElementById('nav-admin').style.display = 'none';
       }
 
-      // Отрисовываем ту вкладку, которая была изначально активна (без авто-сброса)
       switchTab(currentTab);
     }
 
@@ -570,8 +617,9 @@
       return `
         <div class="app-footer">
           <div class="footer-links">
-            <a href="https://t.me/SHELFstore1" target="_blank" class="footer-link">📢 Telegram-канал SHELF</a>
-            <a href="https://www.avito.ru/brands/82408a3b639091b8eb0dabc4d797b316?src=sharing" target="_blank" class="footer-link">🛍 Авито Продавец</a>
+            <a href="https://t.me/SHELFstore1" target="_blank" class="footer-link">📢 Канал SHELF</a>
+            <a href="https://t.me/SHELFotz" target="_blank" class="footer-link">💬 Отзывы</a>
+            <a href="https://www.avito.ru/brands/82408a3b639091b8eb0dabc4d797b316?src=sharing" target="_blank" class="footer-link">🛍 Авито</a>
           </div>
           <div class="footer-legal-links">
             <span style="cursor:pointer; text-decoration:underline;" onclick="openLegalModal('terms')">Пользовательское соглашение</span> • 
@@ -610,6 +658,29 @@
       document.getElementById('legal-modal').style.display = 'none';
     }
 
+    function selectProductOption(productId, type, value) {
+      if (!selectedProductOptions[productId]) {
+        selectedProductOptions[productId] = { size: 'S', color: '' };
+      }
+      selectedProductOptions[productId][type] = value;
+      switchTab('catalog');
+    }
+
+    function addColorPickerField(hex = '#6366f1', name = '') {
+      const container = document.getElementById('colors-container');
+      const item = document.createElement('div');
+      item.className = 'color-item';
+      item.style.display = 'flex';
+      item.style.gap = '8px';
+      item.style.marginBottom = '8px';
+      item.innerHTML = `
+        <input type="color" value="${hex}" style="width: 50px; padding: 4px; height: 46px; cursor: pointer;" class="color-picker-input">
+        <input type="text" placeholder="Название цвета (например, Черный)" value="${name}" class="color-name-input" style="margin-bottom: 0;">
+        <button type="button" class="btn btn-danger" style="width: auto; padding: 0 14px;" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(item);
+    }
+
     function switchTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -633,19 +704,49 @@
 
         container.innerHTML = `
           <div class="product-grid">
-            ${products.map(p => `
-              <div class="product-card">
-                ${p.image ? `<img src="${p.image}" class="product-img" alt="${p.title}">` : ''}
-                <div class="product-header-row">
-                  <div class="product-title">${p.title}</div>
-                  <div class="product-price">${p.price} ₽</div>
+            ${products.map(p => {
+              const sizes = Array.isArray(p.sizes) ? p.sizes : [];
+              const colors = Array.isArray(p.colors) ? p.colors : [];
+              
+              if (!selectedProductOptions[p.id]) {
+                selectedProductOptions[p.id] = {
+                  size: sizes[0] || 'S',
+                  color: colors[0] ? colors[0].hex : ''
+                };
+              }
+              const currentOpts = selectedProductOptions[p.id];
+
+              return `
+                <div class="product-card">
+                  ${p.image ? `<img src="${p.image}" class="product-img" alt="${p.title}">` : ''}
+                  <div class="product-header-row">
+                    <div class="product-title">${p.title}</div>
+                    <div class="product-price">${p.price} ₽</div>
+                  </div>
+                  <div class="product-desc">${p.description \vert{}\vert{} ''}</div>${sizes.length > 0 ? `
+                    <div class="options-row">
+                      <div class="option-group-label">Размер:</div>
+                      ${sizes.map(s => `
+                        <div class="size-chip ${currentOpts.size === s ? 'selected' : ''}" onclick="selectProductOption(${p.id}, 'size', '${s}')">${s}</div>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+
+                  ${colors.length > 0 ? `
+                    <div class="options-row">
+                      <div class="option-group-label">Цвет:</div>
+                      ${colors.map(c => `
+                        <div class="color-dot ${currentOpts.color === c.hex ? 'selected' : ''}" style="background-color: ${c.hex};" title="${c.name || c.hex}" onclick="selectProductOption(${p.id}, 'color', '${c.hex}')"></div>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+
+                  <button class="btn" onclick="addToCart(${p.id}, '${p.title.replace(/'/g, "\\'")}', ${p.price})">
+                    В корзину
+                  </button>
                 </div>
-                <div class="product-desc">${p.description || ''}</div>
-                <button class="btn" onclick="addToCart(${p.id}, '${p.title.replace(/'/g, "\\'")}', ${p.price})">
-                  В корзину
-                </button>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
           ${getFooterHTML()}
         `;
@@ -669,7 +770,8 @@
               <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px;">
                 <div>
                   <div style="font-weight:600; color:#fff;">${item.title}</div>
-                  <div style="color:#34d399; font-weight:700; font-size:14px;">${item.price} ₽</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Размер: ${item.size || '—'} | Цвет: <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};"></span></div>
+                  <div style="color:#34d399; font-weight:700; font-size:14px; margin-top:2px;">${item.price} ₽</div>
                 </div>
                 <button onclick="removeFromCart(${index})" style="color:var(--danger); background:none; border:none; font-size:20px; cursor:pointer; padding:5px;">✕</button>
               </div>
@@ -749,7 +851,21 @@
             <div class="section-title">➕ Добавить товар</div>
             <input id="p-title" placeholder="Название товара">
             <input id="p-price" type="number" placeholder="Цена (руб)">
-            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Загрузить фото из галереи:</label>
+            
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Доступные размеры (S - XXL):</label>
+            <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+              ${ALL_SIZES.map(s => `
+                <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;">
+                  <input type="checkbox" name="product-size" value="${s}" checked style="width:auto; margin:0;"> ${s}
+                </label>
+              `).join('')}
+            </div>
+
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Расцветки (RGBA / Палитра):</label>
+            <div id="colors-container" style="margin-bottom:8px;"></div>
+            <button type="button" class="btn btn-secondary" style="margin-top:0; margin-bottom:12px;" onclick="addColorPickerField()">+ Добавить расцветку</button>
+
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Фото товара:</label>
             <input id="p-img-file" type="file" accept="image/*">
             <textarea id="p-desc" placeholder="Описание товара"></textarea>
             <button class="btn" onclick="addProduct()">Добавить в каталог</button>
@@ -769,6 +885,10 @@
           </div>
           ${getFooterHTML()}
         `;
+        // Добавим дефолтный цвет при открытии админки
+        if (document.getElementById('colors-container').children.length === 0) {
+          addColorPickerField('#000000', 'Черный');
+        }
       }
     }
 
@@ -802,9 +922,18 @@
     }
 
     function addToCart(id, title, price) {
-      cart.push({ product_id: id, id, title, price });
+      const opts = selectedProductOptions[id] || { size: 'S', color: '#000000' };
+      cart.push({ 
+        product_id: id, 
+        id, 
+        title, 
+        price, 
+        size: opts.size, 
+        color: opts.color 
+      });
       document.getElementById('cart-count').innerText = cart.length;
       if (tg) tg.HapticFeedback?.impactOccurred('light');
+      alert('Товар добавлен в корзину!');
     }
 
     function removeFromCart(index) {
@@ -931,13 +1060,33 @@
         return;
       }
 
+      // Сбор выбранных размеров
+      const sizes = Array.from(document.querySelectorAll('input[name="product-size"]:checked')).map(el => el.value);
+
+      // Сбор расцветок
+      const colors = [];
+      document.querySelectorAll('.color-item').forEach(item => {
+        const hex = item.querySelector('.color-picker-input').value;
+        const name = item.querySelector('.color-name-input').value.trim();
+        colors.push({ hex, name: name || hex });
+      });
+
       let image = "";
       if (fileInput.files && fileInput.files[0]) {
         image = await compressImage(fileInput.files[0]);
       }
 
-      await db.from('products').insert({ title, price: parseFloat(price), image, description, is_available: true });
-      alert('Товар добавлен!');
+      await db.from('products').insert({ 
+        title, 
+        price: parseFloat(price), 
+        image, 
+        description, 
+        sizes, 
+        colors, 
+        is_available: true 
+      });
+
+      alert('Товар успешно добавлен!');
       await preloadData();
       switchTab('admin');
     }
