@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SHELF — Premium Store</title>
-  <!-- SDK Telegram Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.2.5/index.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.2.5/700.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.2.5/800.min.css" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-color: #07090e;
@@ -90,6 +88,17 @@
       object-fit: cover;
     }
 
+    .btn-login-sm {
+      background: var(--accent-gradient);
+      color: #fff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .container {
       padding: 16px;
       max-width: 500px;
@@ -115,6 +124,7 @@
       padding: 14px;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     }
 
@@ -156,44 +166,7 @@
       font-size: 13px;
       color: var(--text-muted);
       line-height: 1.5;
-      margin-bottom: 12px;
-    }
-
-    .size-selector {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
       margin-bottom: 14px;
-    }
-
-    .size-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .size-btn.selected {
-      background: var(--accent);
-      border-color: #8b5cf6;
-      color: #fff;
-    }
-
-    .badge-preorder {
-      background: rgba(245, 158, 11, 0.15);
-      color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      display: inline-block;
     }
 
     .btn {
@@ -214,11 +187,6 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
 
     .btn-secondary {
@@ -319,6 +287,11 @@
       color: #a5b4fc;
       text-decoration: none;
       font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: #fff;
     }
 
     .footer-legal-links {
@@ -367,7 +340,7 @@
       color: #fff;
     }
 
-    input, textarea, select {
+    input, textarea {
       width: 100%;
       padding: 14px;
       margin-bottom: 12px;
@@ -377,12 +350,19 @@
       border-radius: var(--radius-sm);
       font-family: inherit;
       font-size: 14px;
+      transition: all 0.2s ease;
       box-sizing: border-box;
     }
 
     input[type="file"] {
       padding: 10px;
       cursor: pointer;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
     }
 
     .section-card {
@@ -414,35 +394,15 @@
 
     .admin-list-item {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      justify-content: space-between;
+      align-items: center;
       background: rgba(10, 15, 26, 0.6);
-      padding: 12px 14px;
-      margin-bottom: 10px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
       border-radius: 10px;
       border: 1px solid var(--card-border);
     }
-
-    .user-pill { cursor:pointer; border:1px solid var(--card-border); border-radius:999px; padding:6px 10px; display:flex; align-items:center; gap:8px; color:#fff; background:transparent; font:inherit; max-width:190px; }
-    .user-avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; }
-    .profile-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.62); display:flex; align-items:flex-start; justify-content:center; padding:76px 16px 20px; }
-    .profile-card { width:min(100%,390px); background:var(--card-bg,#171717); color:var(--text,#fff); border:1px solid var(--card-border); border-radius:18px; padding:20px; box-shadow:0 18px 60px rgba(0,0,0,.35); animation:profileIn .18s ease-out; }
-    @keyframes profileIn { from { opacity:0; transform:translateY(-8px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
-    .profile-row { display:flex; align-items:center; gap:14px; margin:18px 0; }
-    .profile-avatar { width:62px; height:62px; border-radius:50%; object-fit:cover; background:#344054; }
-    .profile-auth { border:1px solid rgba(34,197,94,.35); background:rgba(34,197,94,.09); border-radius:12px; padding:12px; margin-top:18px; font-size:13px; }
-    .profile-close { border:0; background:transparent; color:inherit; font-size:22px; cursor:pointer; }
-    .order-status {
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      display: inline-block;
-    }
-    .status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-    .status-confirmed { background: rgba(16, 185, 129, 0.2); color: #34d399; }
   </style>
-<base target="_blank">
 </head>
 <body>
 
@@ -470,16 +430,7 @@
     </div>
   </div>
 
-  <div id="profile-overlay" class="profile-overlay" style="display:none;" onclick="if(event.target===this)closeProfile()">
-    <section class="profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-        <div class="modal-title" id="profile-title" style="margin:0;">Профиль</div>
-        <button class="profile-close" onclick="closeProfile()" aria-label="Закрыть">×</button>
-      </div>
-      <div id="profile-content"><p>Загрузка профиля…</p></div>
-    </section>
-  </div>
-
+  <!-- Legal Modal -->
   <div id="legal-modal" class="modal-overlay" style="display:none;">
     <div class="modal-body">
       <div class="modal-title" id="modal-legal-title">Документ</div>
@@ -489,311 +440,359 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://whqicbrivhiaegtzelci.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_FfYb_P8kESdDW8I488cYtA_UPFlPSi8";
+    const SUPABASE_URL = "https://vcneretrcmboehngbqjy.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_WZU_tUJbkdF9iezNHxepwA_iGdDYffd";
+    
+    // Главные владельцы проекта
+    const SUPER_ADMINS = [5134404754, 5889214841];
+
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const tg = window.Telegram?.WebApp;
+    if (tg) tg.expand();
 
-    if (tg) { tg.ready(); tg.expand(); }
-
-    let currentUser = tg?.initDataUnsafe?.user || null;
+    let currentUser = tg?.initDataUnsafe?.user || JSON.parse(localStorage.getItem('shelf_user') || 'null');
     let currentUserId = currentUser ? Number(currentUser.id) : 0;
-    let adminList = [];
+
+    let adminList = [...SUPER_ADMINS];
     let cart = [];
     let settings = { card_number: '', phone_number: '' };
-    let selectedSizes = {};
-    let isAdmin = false;
-    let telegramVerified = false;
-    let profileInfoCache = null;
-
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-    }
-
-    function api(action, payload = {}) {
-      if (!tg?.initData) {
-        return Promise.reject(new Error('Откройте магазин через Telegram, чтобы подтвердить личность.'));
-      }
-      return fetch(`${SUPABASE_URL}/functions/v1/shelf-api`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`
-        },
-        body: JSON.stringify({ action, initData: tg.initData, payload })
-      }).then(async response => {
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok || result.error) throw new Error(result.error || `Ошибка сервера (${response.status})`);
-        return result;
-      });
-    }
-
-    function requireTelegram() {
-      if (!tg?.initData || !currentUserId) {
-        alert('Для оформления заказа откройте SHELF через Telegram.');
-        return false;
-      }
-      return true;
-    }
 
     async function init() {
-      // Не блокируем интерфейс из-за сетевой ошибки: каталог должен открываться,
-      // а сервер отдельно проверит Telegram initData при оформлении заказа.
-      if (!tg?.initData || !currentUser) {
-        renderUserHeaderStatus();
-        document.getElementById('app-content').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">✈️</div>
-            <h3 style="color:#fff;margin-bottom:8px;">Откройте SHELF в Telegram</h3>
-            <p>Для оформления заказа откройте магазин через Telegram.</p>
-            ${getFooterHTML()}
-          </div>`;
-        return;
+      if (tg?.initDataUnsafe?.user) {
+        currentUser = tg.initDataUnsafe.user;
+        currentUserId = Number(currentUser.id);
+        localStorage.setItem('shelf_user', JSON.stringify(currentUser));
       }
-      currentUserId = Number(currentUser.id);
+
+      await loadAdmins();
+      await loadSettings();
       renderUserHeaderStatus();
-      document.getElementById('nav-admin').style.display = 'none';
-      switchTab('catalog');
-      const settingsTask = loadSettings();
-      try {
-        // Единственный источник статуса аккаунта и прав администратора — ответ API.
-        profileInfoCache = await api('profile_info');
-        telegramVerified = true;
-        isAdmin = profileInfoCache.isAdmin === true;
-        document.getElementById('nav-admin').style.display = isAdmin ? 'flex' : 'none';
-      } catch (e) {
-        telegramVerified = false;
-        isAdmin = false;
+
+      // Если ID входит в список админов, сразу показываем кнопку продавца внизу
+      if (currentUserId > 0 && adminList.includes(currentUserId)) {
+        document.getElementById('nav-admin').style.display = 'flex';
+      } else {
         document.getElementById('nav-admin').style.display = 'none';
-        console.error('[SHELF] Не удалось подтвердить Telegram через сервер:', e.message);
       }
-      await settingsTask;
-      renderUserHeaderStatus();
+
+      switchTab('catalog');
     }
 
     function renderUserHeaderStatus() {
       const el = document.getElementById('user-header-status');
       if (currentUserId > 0 && currentUser) {
-        const name = currentUser.username ? `@${currentUser.username}` : (currentUser.first_name || 'Покупатель');
+        const name = currentUser.username ? `@${currentUser.username}` : (currentUser.first_name || 'Пользователь');
         const photo = currentUser.photo_url || 'https://telegram.org/img/t_logo.png';
-        el.innerHTML = `<button class="user-pill" type="button" onclick="openProfile()"><img src="${escapeHtml(photo)}" class="user-avatar" alt="Аватар"><span>${escapeHtml(name)}</span></button>`;
+        el.innerHTML = `
+          <div class="user-pill">
+            <img src="${photo}" class="user-avatar" alt="Avatar">
+            <span>${name}</span>
+            <button class="btn-login-sm" onclick="logout()" style="background:rgba(239,68,68,0.2); color:#f87171; margin-left:4px;">Выйти</button>
+          </div>
+        `;
       } else {
-        el.innerHTML = `<button class="user-pill" type="button" onclick="openProfile()"><span>Telegram</span><span aria-hidden="true">⌄</span></button>`;
+        el.innerHTML = `
+          <div class="user-pill">
+            <span>👀 Гость</span>
+            <button class="btn-login-sm" onclick="showAuthPrompt()">Войти</button>
+          </div>
+        `;
       }
     }
 
-    function closeProfile() { document.getElementById('profile-overlay').style.display = 'none'; }
-
-    async function openProfile() {
-      const overlay = document.getElementById('profile-overlay');
-      const content = document.getElementById('profile-content');
-      overlay.style.display = 'flex';
-      if (!tg?.initData || !currentUser || !currentUserId) {
-        content.innerHTML = `<p style="color:var(--text-muted);line-height:1.5;">Сейчас вы используете гостевой режим. Чтобы подтвердить аккаунт и проверить права администратора, откройте SHELF через Telegram.</p><a class="btn btn-primary" style="display:block;text-align:center;text-decoration:none;margin-top:14px;" href="https://t.me/SHELFstore1" target="_blank" rel="noopener">Открыть Telegram</a><div class="profile-auth" style="border-color:var(--card-border);background:transparent;">Гостевой режим — аккаунт не подтверждён</div>`;
-        return;
-      }
-      const fullName = [currentUser.first_name, currentUser.last_name].filter(Boolean).join(' ') || 'Пользователь Telegram';
-      const photo = currentUser.photo_url || 'https://telegram.org/img/t_logo.png';
-      content.innerHTML = `<div class="profile-row"><img class="profile-avatar" src="${escapeHtml(photo)}" alt="Аватар"><div style="min-width:0;"><div style="font-weight:700;font-size:17px;overflow-wrap:anywhere;">${escapeHtml(fullName)}</div><div style="color:var(--text-muted);font-size:13px;margin-top:4px;">${currentUser.username ? '@'+escapeHtml(currentUser.username) : 'Username не указан'}</div><div style="font-size:13px;margin-top:7px;">Заказов: <b id="profile-order-count">…</b></div></div></div><div id="profile-auth-status" class="profile-auth" style="border-color:var(--card-border);background:transparent;">Проверяем аккаунт Telegram…</div>`;
+    async function loadAdmins() {
       try {
-        const result = await api('profile_info');
-        profileInfoCache = result;
-        telegramVerified = true;
-        const countEl = document.getElementById('profile-order-count');
-        if (countEl) countEl.textContent = String(Number(result.orderCount) || 0);
-        const statusEl = document.getElementById('profile-auth-status');
-        if (statusEl) {
-          statusEl.textContent = '✓ Аккаунт Telegram подтверждён сервером';
-          statusEl.style.borderColor = 'rgba(34,197,94,.35)';
-          statusEl.style.background = 'rgba(34,197,94,.09)';
+        const { data } = await db.from('settings').select('admin_ids').single();
+        if (data && data.admin_ids && Array.isArray(data.admin_ids)) {
+          adminList = Array.from(new Set([...SUPER_ADMINS, ...data.admin_ids.map(Number)]));
         }
-        isAdmin = result.isAdmin === true;
-        document.getElementById('nav-admin').style.display = isAdmin ? 'flex' : 'none';
       } catch (e) {
-        telegramVerified = false;
-        const countEl = document.getElementById('profile-order-count');
-        if (countEl) countEl.textContent = '—';
-        const statusEl = document.getElementById('profile-auth-status');
-        if (statusEl) statusEl.textContent = 'Не удалось подтвердить аккаунт сервером: ' + e.message;
-        document.getElementById('nav-admin').style.display = 'none';
-        console.error('[SHELF] Не удалось загрузить профиль:', e.message);
+        console.error("Ошибка загрузки админов, используются суперадмины по умолчанию:", e);
+        adminList = [...SUPER_ADMINS];
+      }
+    }
+
+    async function saveAdmins() {
+      try {
+        const customAdmins = adminList.filter(id => !SUPER_ADMINS.includes(id));
+        await db.from('settings').update({ admin_ids: customAdmins }).eq('id', 1);
+      } catch (e) {
+        console.error("Ошибка сохранения админов:", e);
       }
     }
 
     async function loadSettings() {
       try {
-        const { data, error } = await db.from('settings').select('value').eq('key', 'payment_info').maybeSingle();
-        if (error) throw error;
-        settings = data?.value || { card_number: '', phone_number: '' };
+        const { data } = await db.from('settings').select('*').single();
+        if (data) settings = data;
       } catch (e) {
-        console.error('Ошибка загрузки реквизитов:', e.message);
+        console.error("Ошибка настроек:", e);
       }
+    }
+
+    function showAuthPrompt() {
+      const idStr = prompt("Введите ваш Telegram ID для авторизации (например, для проверки админки на ПК):");
+      if (!idStr) return;
+      const id = Number(idStr.trim());
+      if (isNaN(id) || id <= 0) {
+        alert("Неверный ID!");
+        return;
+      }
+      currentUser = { id: id, first_name: `User ${id}`, username: `user_${id}` };
+      currentUserId = id;
+      localStorage.setItem('shelf_user', JSON.stringify(currentUser));
+      init();
+    }
+
+    function logout() {
+      localStorage.removeItem('shelf_user');
+      currentUser = null;
+      currentUserId = 0;
+      renderUserHeaderStatus();
+      init();
     }
 
     function getFooterHTML() {
       return `
         <div class="app-footer">
           <div class="footer-links">
-            <a href="https://t.me/SHELFstore1" target="_blank" class="footer-link">📢 Telegram SHELF</a>
-            <a href="https://t.me/SHELFotz" target="_blank" class="footer-link" style="color:#34d399;">💬 Отзывы покупателей</a>
+            <a href="https://t.me/SHELFstore1" target="_blank" class="footer-link">📢 Telegram-канал SHELF</a>
             <a href="https://www.avito.ru/brands/82408a3b639091b8eb0dabc4d797b316?src=sharing" target="_blank" class="footer-link">🛍 Авито Продавец</a>
           </div>
           <div class="footer-legal-links">
-            <span style="cursor:pointer;text-decoration:underline;" onclick="openLegalModal('terms')">Пользовательское соглашение</span> •
-            <span style="cursor:pointer;text-decoration:underline;" onclick="openLegalModal('privacy')">Конфиденциальность</span>
+            <span style="cursor:pointer; text-decoration:underline;" onclick="openLegalModal('terms')">Пользовательское соглашение</span> • 
+            <span style="cursor:pointer; text-decoration:underline;" onclick="openLegalModal('privacy')">Конфиденциальность</span>
           </div>
-          <div class="footer-credits">Разработано студией <b>ELEVEN_PROJECT</b> | Кодер: <b>shk1p9r</b></div>
-        </div>`;
+          <div class="footer-credits">
+            Разработано студией <b>ELEVEN_PROJECT</b> | Кодер: <b>shk1p9r</b>
+          </div>
+        </div>
+      `;
     }
 
     function openLegalModal(type) {
       const modal = document.getElementById('legal-modal');
       const title = document.getElementById('modal-legal-title');
       const content = document.getElementById('modal-legal-content');
+
       if (type === 'terms') {
         title.innerText = 'Пользовательское соглашение';
         content.innerHTML = `
-          <p><b>1. Предмет соглашения</b><br>Настоящее соглашение регулирует использование Telegram Mini App «SHELF» для оформления заказов одежды и аксессуаров.</p>
-          <p style="margin-top:8px;"><b>2. Оформление заказа</b><br>Подтверждение заказа и параметры доставки согласовываются с продавцом в Telegram.</p>
-          <p style="margin-top:8px;"><b>3. Возврат и обмен</b><br>Возврат и обмен осуществляются в соответствии с применимым законодательством.</p>`;
+          <p><b>1. Общие положения</b><br>Используя магазин SHELF, вы соглашаетесь с условиями покупки товара и правилами оформления заказов.</p>
+          <p style="margin-top:8px;"><b>2. Заказы и Оплата</b><br>Все заказы подтверждаются продавцом. Продавец имеет право отменить бронь при некорректных данных.</p>
+          <p style="margin-top:8px;"><b>3. Права</b><br>Все права на дизайн и товарные марки принадлежат магазину SHELF и разработчикам ELEVEN_PROJECT.</p>
+        `;
       } else {
         title.innerText = 'Политика конфиденциальности';
         content.innerHTML = `
-          <p><b>1. Данные</b><br>Для обработки заказа используются Telegram ID, имя, username, телефон и состав заказа.</p>
-          <p style="margin-top:8px;"><b>2. Обработка</b><br>Данные используются для оформления и сопровождения заказа и должны быть доступны только уполномоченным сотрудникам.</p>
-          <p style="margin-top:8px;"><b>3. Согласие</b><br>Перед оформлением заказа ознакомьтесь с условиями обработки данных.</p>`;
+          <p><b>1. Сбор данных</b><br>Мы обрабатываем необходимые данные вашего аккаунта исключительно для авторизации и доставки заказов.</p>
+          <p style="margin-top:8px;"><b>2. Защита данных</b><br>Персональные данные не передаются третьим лицам и надежно защищены.</p>
+        `;
       }
       modal.style.display = 'flex';
     }
 
-    function closeLegalModal() { document.getElementById('legal-modal').style.display = 'none'; }
-
-    function selectSize(productId, size, btnEl) {
-      selectedSizes[productId] = size;
-      const parent = btnEl.parentElement;
-      parent.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-      btnEl.classList.add('selected');
+    function closeLegalModal() {
+      document.getElementById('legal-modal').style.display = 'none';
     }
 
     async function switchTab(tab) {
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       const activeNav = document.getElementById(`nav-${tab}`);
       if (activeNav) activeNav.classList.add('active');
+
       const container = document.getElementById('app-content');
 
       if (tab === 'catalog') {
         container.innerHTML = `<div class="empty-state"><p>Загрузка каталога...</p></div>`;
         const { data: products, error } = await db.from('products').select('*').order('created_at', { ascending: false });
-        if (error) {
-          console.error(error);
-          container.innerHTML = `<div class="empty-state"><p>Не удалось загрузить каталог. Попробуйте позже.</p></div>${getFooterHTML()}`;
+        
+        if (error || !products || products.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">✨</div>
+              <p>Каталог пока пуст</p>
+            </div>
+            ${getFooterHTML()}
+          `;
           return;
         }
-        if (!products || products.length === 0) {
-          container.innerHTML = `<div class="empty-state"><div class="empty-icon">✨</div><p>Каталог пока пуст</p></div>${getFooterHTML()}`;
-          return;
-        }
+
         container.innerHTML = `
           <div class="product-grid">
-            ${products.map(p => {
-              const sizes = Array.isArray(p.sizes) ? p.sizes : (typeof p.sizes === 'string' ? p.sizes.split(',') : []);
-              const isPreorder = p.category === 'preorder';
-              const isOutOfStock = p.is_available === false;
-              const img = p.image || p.image_url || '';
-              return `<div class="product-card">
-                ${img ? `<img src="${escapeHtml(img)}" class="product-img" alt="${escapeHtml(p.title)}" loading="lazy">` : ''}
-                ${isPreorder ? `<div class="badge-preorder">⌛ Предзаказ (доставка 7-14 дней)</div>` : ''}
-                <div class="product-header-row"><div class="product-title">${escapeHtml(p.title)}</div><div class="product-price">${Number(p.price).toLocaleString('ru-RU')} ₽</div></div>
-                <div class="product-desc">${escapeHtml(p.description || '')}</div>
-                ${p.color_rgba ? `<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin:8px 0 12px;"><span style="display:inline-block;width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:${escapeHtml(p.color_rgba)};"></span><span>Цвет товара</span></div>` : ''}
-                ${sizes.length ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Выберите размер:</div><div class="size-selector">${sizes.map(size => `<button class="size-btn ${selectedSizes[p.id] === size ? 'selected' : ''}" onclick="selectSize(${Number(p.id)}, '${escapeHtml(size)}', this)">${escapeHtml(size)}</button>`).join('')}</div>` : ''}
-                <button class="btn" ${isOutOfStock ? 'disabled' : ''} onclick="addToCart(${Number(p.id)}, '${escapeHtml(p.title)}', ${Number(p.price)}, ${sizes.length > 0}, '${escapeHtml(p.color_rgba || '')}')">${isOutOfStock ? 'Нет в наличии' : (isPreorder ? 'Забронировать (Предзаказ)' : 'В корзину')}</button>
-              </div>`;
-            }).join('')}
-          </div>${getFooterHTML()}`;
-      } else if (tab === 'cart') {
-        if (!cart.length) {
-          container.innerHTML = `<div class="empty-state"><div class="empty-icon">🛍</div><p>Ваша корзина пуста</p></div>${getFooterHTML()}`;
+            ${products.map(p => `
+              <div class="product-card">
+                ${p.image_url ? `<img src="${p.image_url}" class="product-img" alt="${p.title}">` : ''}
+                <div class="product-header-row">
+                  <div class="product-title">${p.title}</div>
+                  <div class="product-price">${p.price} ₽</div>
+                </div>
+                <div class="product-desc">${p.description || ''}</div>
+                <button class="btn" onclick="addToCart(${p.id}, '${p.title.replace(/'/g, "\\'")}', ${p.price})">
+                  В корзину
+                </button>
+              </div>
+            `).join('')}
+          </div>
+          ${getFooterHTML()}
+        `;
+      } 
+      else if (tab === 'cart') {
+        if (!cart || cart.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">🛍</div>
+              <p>Ваша корзина пуста</p>
+            </div>
+            ${getFooterHTML()}
+          `;
           return;
         }
         const total = cart.reduce((s, i) => s + i.price, 0);
         container.innerHTML = `
-          <div class="section-card"><div class="section-title">Ваш заказ</div>
-          ${cart.map((item, index) => `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--card-border);padding-bottom:10px;"><div><div style="font-weight:600;color:#fff;">${escapeHtml(item.title)}${item.size ? `<span style="color:#a5b4fc;font-size:12px;"> (Размер: ${escapeHtml(item.size)})</span>` : ''}${item.color_rgba ? `<div style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:11px;margin-top:4px;"><span style="width:12px;height:12px;border-radius:50%;background:${escapeHtml(item.color_rgba)};border:1px solid rgba(255,255,255,.25);display:inline-block;"></span>Цвет выбранного товара</div>` : ''}</div><div style="color:#34d399;font-weight:700;font-size:14px;">${Number(item.price).toLocaleString('ru-RU')} ₽</div></div><button onclick="removeFromCart(${index})" style="color:var(--danger);background:none;border:none;font-size:20px;cursor:pointer;padding:5px;">✕</button></div>`).join('')}
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;font-size:18px;font-weight:800;color:#fff;"><span>Итого:</span><span style="color:#34d399;">${total.toLocaleString('ru-RU')} ₽</span></div></div>
-          <button class="btn btn-success" onclick="openCheckout()">Оформить заказ / Забронировать</button>${getFooterHTML()}`;
-      } else if (tab === 'admin') {
-        if (!isAdmin) {
-          container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔒</div><h3 style="color:#fff;margin-bottom:8px;">Доступ ограничен</h3><p style="font-size:13px;color:var(--text-muted);">У вас нет прав продавца.</p></div>${getFooterHTML()}`;
+          <div class="section-card">
+            <div class="section-title">Ваш заказ</div>
+            ${cart.map((item, index) => `
+              <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px;">
+                <div>
+                  <div style="font-weight:600; color:#fff;">${item.title}</div>
+                  <div style="color:#34d399; font-weight:700; font-size:14px;">${item.price} ₽</div>
+                </div>
+                <button onclick="removeFromCart(${index})" style="color:var(--danger); background:none; border:none; font-size:20px; cursor:pointer; padding:5px;">✕</button>
+              </div>
+            `).join('')}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; font-size:18px; font-weight:800; color:#fff;">
+              <span>Итого:</span>
+              <span style="color:#34d399;">${total} ₽</span>
+            </div>
+          </div>
+          <button class="btn btn-success" onclick="openCheckout()">Оформить заказ</button>
+          ${getFooterHTML()}
+        `;
+      } 
+      else if (tab === 'admin') {
+        if (!currentUserId || !adminList.includes(currentUserId)) {
+          container.innerHTML = `
+            <div class="section-card" style="text-align: center; padding: 30px 20px;">
+              <div class="empty-icon">🔒</div>
+              <h3 style="color:#fff; margin-bottom:8px;">Доступ ограничен</h3>
+              <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+                У вас нет прав администратора. Авторизуйтесь под своим Telegram ID:
+              </p>
+              <button class="btn" onclick="showAuthPrompt()">Авторизоваться</button>
+            </div>
+            ${getFooterHTML()}
+          `;
           return;
         }
+
         container.innerHTML = `<div class="empty-state"><p>Загрузка панели управления...</p></div>`;
-        try {
-          const [ordersResult, productsResult, adminsResult] = await Promise.all([
-            api('admin_list_orders'), db.from('products').select('*').order('created_at', { ascending: false }), api('admin_list_admins')
-          ]);
-          adminList = adminsResult.admins || [];
-          const orders = ordersResult.orders || [];
-          const products = productsResult.data || [];
-          if (productsResult.error) throw productsResult.error;
-          container.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span style="font-size:12px;color:var(--text-muted);">Админ: <b style="color:#fff;">${escapeHtml(currentUser?.first_name || currentUserId)}</b></span></div>
-            <div class="section-card"><div class="section-title">📦 Поступившие заказы / Брони</div>
-              ${orders.length ? orders.map(o => `<div class="admin-list-item">
-                <div style="display:flex;justify-content:space-between;align-items:center;"><b>Заказ #${Number(o.id)}</b><span class="order-status ${o.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">${escapeHtml(orderStatusLabel(o.status))}</span></div>
-                <div style="font-size:12px;color:var(--text-muted);">Покупатель: <b>${escapeHtml(o.username || o.user_name || 'Покупатель')}</b><br>Telegram ID: ${Number(o.telegram_user_id || 0)}<br>Тел: ${escapeHtml(o.user_phone || 'Не указан')}</div>
-                <div style="font-size:13px;margin:4px 0;color:#fff;"><b>Товары:</b>${(Array.isArray(o.items) ? o.items : []).map(i => `<br>• ${escapeHtml(i.title)} ${i.size ? `(Размер: ${escapeHtml(i.size)})` : ''} — ${Number(i.price).toLocaleString('ru-RU')} ₽`).join('')}</div>
-                <div style="font-size:14px;font-weight:800;color:#34d399;">Сумма: ${Number(o.total_price).toLocaleString('ru-RU')} ₽</div>
-                <div style="display:flex;gap:8px;margin-top:6px;"><button class="btn btn-success" style="padding:6px;font-size:12px;" onclick="updateOrderStatus(${Number(o.id)}, 'confirmed')">✓ Подтвердить</button><button class="btn btn-danger" style="padding:6px;font-size:12px;" onclick="updateOrderStatus(${Number(o.id)}, 'cancelled')">✕ Отменить</button></div>
-              </div>`).join('') : '<p style="color:var(--text-muted);font-size:13px;">Заказов пока нет</p>'}
-            </div>
-            <div class="section-card"><div class="section-title">➕ Добавить товар</div>
-              <input id="p-title" placeholder="Название товара"><input id="p-price" type="number" min="0.01" step="0.01" placeholder="Цена (руб)">
-              <input id="p-sizes" placeholder="Размеры через запятую (например: S, M, L, XL)">
-              <div class="section-title" style="font-size:13px;margin-top:4px;">Цвет товара</div>
-              <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
-                <input id="p-color-picker" type="color" value="#6366f1" aria-label="Выбрать цвет" style="width:58px;height:48px;padding:4px;margin:0;flex:0 0 58px;">
-                <div id="p-color-preview" style="height:40px;flex:1;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(99,102,241,1);"></div>
+        const { data: orders } = await db.from('orders').select('*').order('created_at', { ascending: false });
+        const { data: products } = await db.from('products').select('*').order('created_at', { ascending: false });
+
+        container.innerHTML = `
+          <div class="section-card">
+            <div class="section-title">🔑 Реквизиты оплаты</div>
+            <input id="set-card" value="${settings.card_number || ''}" placeholder="Номер карты">
+            <input id="set-phone" value="${settings.phone_number || ''}" placeholder="Номер телефона">
+            <button class="btn" onclick="saveSettings()">Сохранить реквизиты</button>
+          </div>
+
+          <div class="section-card">
+            <div class="section-title">👥 Управление администраторами</div>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Добавить Telegram ID сотрудника:</p>
+            <input id="new-admin-id" type="number" placeholder="Telegram ID">
+            <button class="btn btn-secondary" style="margin-top:0; margin-bottom:15px;" onclick="addAdmin()">+ Добавить администратора</button>
+            
+            <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:8px;">Список админов:</div>
+            ${adminList.map(id => `
+              <div class="admin-list-item">
+                <span style="font-size:13px; font-weight:600;">ID: ${id}${SUPER_ADMINS.includes(id) ? '👑 (Владелец)' : ''}</span>
+                ${!SUPER_ADMINS.includes(id) ? `
+                  <button class="btn btn-danger" style="width:auto; padding:4px 10px; font-size:11px;" onclick="removeAdmin(${id})">Удалить</button>
+                ` : ''}
               </div>
-              <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;">
-                <label style="font-size:11px;color:var(--text-muted);">R<input id="p-color-r" type="number" min="0" max="255" value="99" style="margin-top:4px;padding:8px;"></label>
-                <label style="font-size:11px;color:var(--text-muted);">G<input id="p-color-g" type="number" min="0" max="255" value="102" style="margin-top:4px;padding:8px;"></label>
-                <label style="font-size:11px;color:var(--text-muted);">B<input id="p-color-b" type="number" min="0" max="255" value="241" style="margin-top:4px;padding:8px;"></label>
-                <label style="font-size:11px;color:var(--text-muted);">A (0–1)<input id="p-color-a" type="number" min="0" max="1" step="0.01" value="1" style="margin-top:4px;padding:8px;"></label>
+            `).join('')}
+          </div>
+
+          <div class="section-card">
+            <div class="section-title">📦 Управление заказами</div>
+            ${orders?.map(o => `
+              <div style="background:rgba(10, 15, 26, 0.6); border:1px solid var(--card-border); padding:12px; margin-bottom:10px; border-radius:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                  <b>Заказ #${o.id}</b>
+                  <span style="font-size:12px; color:var(--text-muted);">${o.payment_method === 'online' ? '💳 Перевод' : '💵 Наличные'}</span>
+                </div>
+                <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">Покупатель: <b style="color:#fff;">${o.user_name}</b> (${o.user_phone})</div>
+                <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Сумма: <b style="color:#34d399;">${o.total_amount} ₽</b></div>
+                <div style="font-size:12px; margin-bottom:8px;">Статус: <b>${o.status === 'pending' ? '⏳ Ожидает проверки' : o.status === 'paid' ? '✅ Оплачен' : '💵 Бронь'}</b></div>
+                ${o.status === 'pending' ? `
+                  <button class="btn btn-success" style="padding:10px;" onclick="updateOrderStatus(${o.id}, 'paid')">Подтвердить оплату</button>
+                ` : ''}
               </div>
-              <div id="p-color-value" style="font-size:11px;color:var(--text-muted);margin:2px 0 12px;">rgba(99, 102, 241, 1)</div>
-              <select id="p-availability"><option value="all">В наличии</option><option value="preorder">Предзаказ</option></select>
-              <label style="display:flex;gap:10px;align-items:center;margin:4px 0 12px;color:var(--text-main);font-size:13px;"><input id="p-unlimited-stock" type="checkbox" style="width:18px;height:18px;margin:0;"> Бесконечное количество (всегда в наличии)</label>
-              <input id="p-img-file" type="file" accept="image/jpeg,image/png,image/webp">
-              <textarea id="p-desc" placeholder="Описание товара"></textarea><button id="btn-add-product" class="btn" onclick="addProduct()">Загрузить и добавить</button>
-            </div>
-            <div class="section-card"><div class="section-title">🔑 Реквизиты оплаты</div><input id="set-card" value="${escapeHtml(settings.card_number || '')}" placeholder="Номер карты"><input id="set-phone" value="${escapeHtml(settings.phone_number || '')}" placeholder="Номер телефона"><button class="btn" onclick="saveSettings()">Сохранить реквизиты</button></div>
-            <div class="section-card"><div class="section-title">👥 Управление администраторами</div><input id="new-admin-id" type="number" placeholder="Telegram ID сотрудника"><button class="btn btn-secondary" style="margin-bottom:15px;" onclick="addAdmin()">+ Добавить администратора</button>
-              ${adminList.map(a => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;"><span>ID: ${Number(a.telegram_user_id)}${a.is_super_admin ? ' 👑' : ''}</span>${!a.is_super_admin ? `<button class="btn btn-danger" style="width:auto;padding:4px 10px;" onclick="removeAdmin(${Number(a.telegram_user_id)})">Удалить</button>` : ''}</div>`).join('')}
-            </div>
-            <div class="section-card"><div class="section-title">🏷 Товары в каталоге</div>
-              ${products.length ? products.map(p => `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;border-bottom:1px solid var(--card-border);padding-bottom:6px;"><div><b>${escapeHtml(p.title)}</b> (${Number(p.price).toLocaleString('ru-RU')} ₽)${p.unlimited_stock ? '<div style="font-size:11px;color:#34d399;">Бесконечное количество</div>' : ''}${p.color_rgba ? `<div style="font-size:11px;color:var(--text-muted);">${escapeHtml(p.color_rgba)}</div>` : ''}</div><button class="btn btn-danger" style="width:auto;padding:6px 12px;" onclick="deleteProduct(${Number(p.id)})">Удалить</button></div>`).join('') : '<p style="color:var(--text-muted);">Товаров нет</p>'}
-            </div>${getFooterHTML()}`;
-        } catch (e) {
-          console.error(e);
-          container.innerHTML = `<div class="empty-state"><p>Не удалось загрузить панель: ${escapeHtml(e.message)}</p></div>${getFooterHTML()}`;
-        }
+            `).join('') || '<p style="color:var(--text-muted); font-size:13px;">Заказов пока нет</p>'}
+          </div>
+
+          <div class="section-card">
+            <div class="section-title">➕ Добавить товар</div>
+            <input id="p-title" placeholder="Название товара">
+            <input id="p-price" type="number" placeholder="Цена (руб)">
+            <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Загрузить фото из галереи:</label>
+            <input id="p-img-file" type="file" accept="image/*">
+            <textarea id="p-desc" placeholder="Описание товара"></textarea>
+            <button class="btn" onclick="addProduct()">Добавить в каталог</button>
+          </div>
+
+          <div class="section-card">
+            <div class="section-title">🏷 Текущие товары</div>
+            ${products?.map(p => `
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(10, 15, 26, 0.6); padding:10px 14px; margin-bottom:8px; border-radius:10px; border:1px solid var(--card-border);">
+                <div>
+                  <div style="font-weight:700; color:#fff;">${p.title}</div>
+                  <div style="color:#34d399; font-size:13px; font-weight:700;">${p.price} ₽</div>
+                </div>
+                <button class="btn btn-danger" style="width:auto; padding:8px 14px; font-size:12px;" onclick="deleteProduct(${p.id})">Удалить</button>
+              </div>
+            `).join('') || '<p style="color:var(--text-muted); font-size:13px;">Товаров нет</p>'}
+          </div>
+          ${getFooterHTML()}
+        `;
       }
     }
 
-    function orderStatusLabel(status) {
-      return ({ pending: 'Ожидает оплаты/проверки', cash_reserved: 'Бронь наличными', confirmed: 'Подтверждён', cancelled: 'Отменён' })[status] || status;
+    async function addAdmin() {
+      const input = document.getElementById('new-admin-id');
+      const newId = Number(input.value.trim());
+      if (!newId || isNaN(newId)) {
+        alert("Введите корректный числовой Telegram ID!");
+        return;
+      }
+      if (adminList.includes(newId)) {
+        alert("Этот администратор уже добавлен!");
+        return;
+      }
+      adminList.push(newId);
+      await saveAdmins();
+      alert(`Администратор ${newId} успешно добавлен!`);
+      switchTab('admin');
     }
 
-    function addToCart(id, title, price, hasSizes, colorRgba = '') {
-      if (hasSizes && !selectedSizes[id]) { alert('Пожалуйста, выберите размер товара!'); return; }
-      cart.push({ id: Number(id), title, price: Number(price), size: selectedSizes[id] || null, color_rgba: colorRgba || null });
+    async function removeAdmin(id) {
+      if (SUPER_ADMINS.includes(id)) {
+        alert("Нельзя удалить владельца!");
+        return;
+      }
+      if (confirm(`Удалить администратора ${id}?`)) {
+        adminList = adminList.filter(a => a !== id);
+        await saveAdmins();
+        switchTab('admin');
+      }
+    }
+
+    function addToCart(id, title, price) {
+      cart.push({ id, title, price });
       document.getElementById('cart-count').innerText = cart.length;
-      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-      if (tg?.showPopup) tg.showPopup({ title: 'SHELF', message: 'Товар добавлен в корзину', buttons: [{type:'ok'}] });
+      if (tg) tg.HapticFeedback?.impactOccurred('light');
     }
 
     function removeFromCart(index) {
@@ -803,160 +802,141 @@
     }
 
     function openCheckout() {
-      if (!requireTelegram()) return;
-      if (!cart.length) { alert('Корзина пуста.'); return; }
-      document.getElementById('app-content').innerHTML = `
-        <div class="section-card"><div class="section-title">Оформление заказа</div>
-          <input id="u-name" maxlength="120" placeholder="Ваше Имя" value="${escapeHtml(currentUser?.first_name || '')}">
-          <input id="u-phone" maxlength="40" placeholder="Ваш телефон для связи">
-          <button class="btn btn-success" onclick="processOrder('cash')">💵 Забронировать (Оплата наличными)</button>
-          <button class="btn btn-secondary" onclick="processOrder('online')">💳 Онлайн перевод по реквизитам</button>
-        </div>${getFooterHTML()}`;
+      const container = document.getElementById('app-content');
+      const total = cart.reduce((s, i) => s + i.price, 0);
+      container.innerHTML = `
+        <div class="section-card">
+          <div class="section-title">Оформление заказа</div>
+          <input id="u-name" placeholder="Ваше Имя" value="${currentUser?.first_name || ''}">
+          <input id="u-phone" placeholder="Ваш телефон для связи">
+          <div style="font-size:14px; font-weight:700; margin: 15px 0 10px 0; color:#fff;">Способ оплаты:</div>
+          <button class="btn" onclick="processOrder('cash')">💵 Наличными при получении</button>
+          <button class="btn btn-secondary" onclick="showOnlinePayment(${total})">💳 Онлайн перевод по реквизитам</button>
+        </div>
+      `;
     }
 
-    async function processOrder(method) {
-      if (!requireTelegram()) return;
-      const name = document.getElementById('u-name')?.value.trim() || currentUser?.first_name || 'Покупатель';
-      const phone = document.getElementById('u-phone')?.value.trim() || '';
-      if (!name) { alert('Укажите имя.'); return; }
-      if (method === 'online' && !settings.card_number && !settings.phone_number) {
-        await loadSettings();
-        if (!settings.card_number && !settings.phone_number) { alert('Продавец пока не указал реквизиты оплаты.'); return; }
+    function showOnlinePayment(total) {
+      const container = document.getElementById('app-content');
+      const name = document.getElementById('u-name')?.value;
+      const phone = document.getElementById('u-phone')?.value;
+
+      container.innerHTML = `
+        <div class="section-card">
+          <div class="section-title">Перевод по реквизитам</div>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:15px;">Переведите <b style="color:#34d399;">${total} ₽</b> на указанные реквизиты:</p>
+          <div style="background:rgba(10, 15, 26, 0.8); padding:14px; border-radius:12px; margin-bottom:15px; border:1px solid var(--card-border);">
+            <div style="margin-bottom:8px;">💳 Номер карты: <b style="font-size:15px; color:#fff; display:block; margin-top:4px;">${settings.card_number}</b></div>
+            <div>📱 Телефон: <b style="font-size:15px; color:#fff; display:block; margin-top:4px;">${settings.phone_number}</b></div>
+          </div>
+          <button class="btn btn-success" onclick="processOrder('online', '${name}', '${phone}')">Я оплатил</button>
+        </div>
+      `;
+    }
+
+    async function processOrder(method, customName, customPhone) {
+      const name = customName || document.getElementById('u-name')?.value || currentUser?.first_name || 'Покупатель';
+      const phone = customPhone || document.getElementById('u-phone')?.value || 'Не указан';
+      const total = cart.reduce((s, i) => s + i.price, 0);
+
+      await db.from('orders').insert({
+        user_id: currentUserId,
+        user_name: name,
+        user_phone: phone,
+        items: cart,
+        total_amount: total,
+        payment_method: method,
+        status: method === 'online' ? 'pending' : 'cash_reserved'
+      });
+
+      cart = [];
+      document.getElementById('cart-count').innerText = '0';
+
+      if (method === 'online') {
+        document.getElementById('app-content').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon" style="color:#fbbf24;">⏳</div>
+            <h2 style="color:#fff; margin-bottom:8px;">Оплата проверяется</h2>
+            <p>Продавец проверяет поступивший перевод.</p>
+          </div>
+        `;
+      } else {
+        document.getElementById('app-content').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon" style="color:#34d399;">✅</div>
+            <h2 style="color:#fff; margin-bottom:8px;">Заказ забронирован!</h2>
+            <p>Продавец свяжется с вами по указанному номеру.</p>
+          </div>
+        `;
       }
-      try {
-        const result = await api('create_order', {
-          user_name: name, user_phone: phone, method,
-          items: cart.map(i => ({ product_id: i.id, size: i.size }))
-        });
-        if (method === 'online') {
-          document.getElementById('app-content').innerHTML = `
-            <div class="section-card"><div class="section-title">Перевод по реквизитам</div>
-              <p style="font-size:14px;color:var(--text-muted);margin-bottom:15px;">Сумма заказа: <b style="color:#34d399;">${Number(result.order.total_price).toLocaleString('ru-RU')} ₽</b></p>
-              <div style="background:rgba(10,15,26,.8);padding:14px;border-radius:12px;margin-bottom:15px;border:1px solid var(--card-border);">
-                <div>💳 Карта: <b style="color:#fff;">${escapeHtml(settings.card_number || 'Не указана')}</b></div>
-                <div style="margin-top:6px;">📱 Телефон: <b style="color:#fff;">${escapeHtml(settings.phone_number || 'Не указан')}</b></div>
-              </div><p style="margin-bottom:12px;">После перевода нажмите кнопку ниже. Продавец проверит оплату вручную.</p>
-              <button class="btn btn-success" onclick="confirmOnlineOrder(${Number(result.order.id)})">Я оплатил</button>
-            </div>`;
-          // Order already exists. Status remains pending until a seller confirms it.
-        } else {
-          showOrderSuccess();
-          cart = []; document.getElementById('cart-count').innerText = '0';
-        }
-      } catch (e) {
-        console.error(e); alert('Не удалось оформить заказ: ' + e.message);
-      }
-    }
-
-    async function confirmOnlineOrder(orderId) {
-      try {
-        await api('customer_mark_paid', { order_id: Number(orderId) });
-        cart = []; document.getElementById('cart-count').innerText = '0';
-        showOrderSuccess('Заявка об оплате отправлена. Продавец проверит перевод.');
-      } catch (e) { alert('Не удалось отправить уведомление: ' + e.message); }
-    }
-
-    function showOrderSuccess(message = 'Продавец скоро свяжется с вами в Telegram.') {
-      document.getElementById('app-content').innerHTML = `<div class="empty-state"><div class="empty-icon" style="color:#34d399;">✅</div><h2>Заказ принят!</h2><p style="margin-bottom:16px;">${escapeHtml(message)}</p><a href="https://t.me/SHELFotz" target="_blank" class="btn btn-secondary" style="display:inline-flex;width:auto;padding:10px 18px;text-decoration:none;">💬 Почитать отзывы</a></div>${getFooterHTML()}`;
-    }
-
-    async function updateOrderStatus(orderId, status) {
-      try { await api('admin_update_order', { order_id: Number(orderId), status }); await switchTab('admin'); }
-      catch (e) { alert('Не удалось изменить статус: ' + e.message); }
-    }
-
-    async function uploadImageToStorage(file) {
-      if (!file) return null;
-      if (!['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('Допустимы только JPG, PNG и WebP.');
-      if (file.size > 5 * 1024 * 1024) throw new Error('Размер изображения не должен превышать 5 МБ.');
-      const { upload } = await api('admin_create_image_upload', { file_name: file.name, content_type: file.type });
-      const { data, error } = await db.storage.from('products').uploadToSignedUrl(upload.path, upload.token, file, { contentType: file.type, upsert: false });
-      if (error) throw error;
-      return db.storage.from('products').getPublicUrl(upload.path).data.publicUrl;
-    }
-
-    function clampColorChannel(value, min, max, fallback) {
-      const n = Number(value);
-      return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
-    }
-    function getProductColorRgba() {
-      const r = Math.round(clampColorChannel(document.getElementById('p-color-r')?.value, 0, 255, 99));
-      const g = Math.round(clampColorChannel(document.getElementById('p-color-g')?.value, 0, 255, 102));
-      const b = Math.round(clampColorChannel(document.getElementById('p-color-b')?.value, 0, 255, 241));
-      const a = Math.round(clampColorChannel(document.getElementById('p-color-a')?.value, 0, 1, 1) * 100) / 100;
-      return `rgba(${r}, ${g}, ${b}, ${a})`;
-    }
-    function syncProductColorFromRgba() {
-      const rgba = getProductColorRgba();
-      const match = rgba.match(/^rgba\((\d+), (\d+), (\d+), ([\d.]+)\)$/);
-      if (!match) return;
-      const [, r, g, b] = match;
-      const hex = '#' + [r, g, b].map(v => Number(v).toString(16).padStart(2, '0')).join('');
-      const picker = document.getElementById('p-color-picker');
-      if (picker) picker.value = hex;
-      const preview = document.getElementById('p-color-preview');
-      const label = document.getElementById('p-color-value');
-      if (preview) preview.style.background = rgba;
-      if (label) label.textContent = rgba;
-    }
-    function syncRgbaFromProductPicker() {
-      const hex = document.getElementById('p-color-picker')?.value || '#6366f1';
-      const rgb = hex.match(/[a-f\d]{2}/gi)?.map(v => parseInt(v, 16)) || [99, 102, 241];
-      ['p-color-r', 'p-color-g', 'p-color-b'].forEach((id, i) => { const el = document.getElementById(id); if (el) el.value = rgb[i]; });
-      syncProductColorFromRgba();
-    }
-    document.addEventListener('input', event => {
-      if (['p-color-r', 'p-color-g', 'p-color-b', 'p-color-a'].includes(event.target?.id)) syncProductColorFromRgba();
-    });
-    document.addEventListener('change', event => {
-      if (event.target?.id === 'p-color-picker') syncRgbaFromProductPicker();
-    });
-
-    async function addProduct() {
-      const title = document.getElementById('p-title').value.trim();
-      const price = Number(document.getElementById('p-price').value);
-      const sizes = document.getElementById('p-sizes').value.trim();
-      const category = document.getElementById('p-availability').value;
-      const colorRgba = getProductColorRgba();
-      const unlimitedStock = document.getElementById('p-unlimited-stock').checked;
-      const file = document.getElementById('p-img-file').files?.[0];
-      const description = document.getElementById('p-desc').value.trim();
-      const btn = document.getElementById('btn-add-product');
-      if (!title || !Number.isFinite(price) || price <= 0) { alert('Укажите название и корректную цену.'); return; }
-      btn.disabled = true; btn.innerText = 'Загрузка...';
-      try {
-        const image = file ? await uploadImageToStorage(file) : null;
-        await api('admin_add_product', { title, price, image, description, sizes: sizes ? sizes.split(',').map(s => s.trim()).filter(Boolean) : [], category, is_available: true, color_rgba: colorRgba, unlimited_stock: unlimitedStock });
-        alert('Товар успешно добавлен!'); await switchTab('admin');
-      } catch (e) { alert('Ошибка при сохранении: ' + e.message); }
-      finally { btn.disabled = false; btn.innerText = 'Загрузить и добавить'; }
-    }
-
-    async function deleteProduct(id) {
-      if (!confirm('Удалить товар?')) return;
-      try { await api('admin_delete_product', { product_id: Number(id) }); await switchTab('admin'); }
-      catch (e) { alert('Не удалось удалить товар: ' + e.message); }
     }
 
     async function saveSettings() {
-      try {
-        await api('admin_save_settings', { card_number: document.getElementById('set-card').value.trim(), phone_number: document.getElementById('set-phone').value.trim() });
-        await loadSettings(); alert('Реквизиты сохранены!'); await switchTab('admin');
-      } catch (e) { alert('Не удалось сохранить реквизиты: ' + e.message); }
+      const card = document.getElementById('set-card').value;
+      const phone = document.getElementById('set-phone').value;
+      await db.from('settings').update({ card_number: card, phone_number: phone }).eq('id', 1);
+      alert('Реквизиты сохранены!');
+      loadSettings();
     }
 
-    async function addAdmin() {
-      const input = document.getElementById('new-admin-id');
-      const newId = Number(input.value.trim());
-      if (!Number.isSafeInteger(newId) || newId <= 0) { alert('Введите корректный Telegram ID.'); return; }
-      try { await api('admin_add_admin', { telegram_user_id: newId }); await switchTab('admin'); }
-      catch (e) { alert('Не удалось добавить администратора: ' + e.message); }
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 800;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+        };
+      });
     }
 
-    async function removeAdmin(id) {
-      if (!confirm(`Удалить администратора ${id}?`)) return;
-      try { await api('admin_remove_admin', { telegram_user_id: Number(id) }); await switchTab('admin'); }
-      catch (e) { alert('Не удалось удалить администратора: ' + e.message); }
+    async function addProduct() {
+      const title = document.getElementById('p-title').value;
+      const price = document.getElementById('p-price').value;
+      const fileInput = document.getElementById('p-img-file');
+      const description = document.getElementById('p-desc').value;
+
+      if (!title || !price) {
+        alert('Заполните название и цену!');
+        return;
+      }
+
+      let image_url = "";
+      if (fileInput.files && fileInput.files[0]) {
+        image_url = await compressImage(fileInput.files[0]);
+      }
+
+      await db.from('products').insert({ title, price: parseFloat(price), image_url, description });
+      alert('Товар добавлен!');
+      switchTab('admin');
+    }
+
+    async function deleteProduct(id) {
+      if (confirm('Удалить этот товар?')) {
+        await db.from('products').delete().eq('id', id);
+        switchTab('admin');
+      }
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      await db.from('orders').update({ status }).eq('id', orderId);
+      switchTab('admin');
     }
 
     init();
