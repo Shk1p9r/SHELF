@@ -468,8 +468,9 @@
       await loadSettings();
       renderUserHeaderStatus();
 
-      // Если ID входит в список админов, сразу показываем кнопку продавца внизу
-      if (currentUserId > 0 && adminList.includes(currentUserId)) {
+      // Проверка прав администратора через таблицу shelf_admins
+      const isAdmin = currentUserId > 0 && adminList.includes(currentUserId);
+      if (isAdmin) {
         document.getElementById('nav-admin').style.display = 'flex';
       } else {
         document.getElementById('nav-admin').style.display = 'none';
@@ -502,36 +503,30 @@
 
     async function loadAdmins() {
       try {
-        const { data } = await db.from('settings').select('admin_ids').single();
-        if (data && data.admin_ids && Array.isArray(data.admin_ids)) {
-          adminList = Array.from(new Set([...SUPER_ADMINS, ...data.admin_ids.map(Number)]));
+        const { data } = await db.from('shelf_admins').select('telegram_user_id');
+        if (data && Array.isArray(data)) {
+          const dbAdmins = data.map(row => Number(row.telegram_user_id));
+          adminList = Array.from(new Set([...SUPER_ADMINS, ...dbAdmins]));
         }
       } catch (e) {
-        console.error("Ошибка загрузки админов, используются суперадмины по умолчанию:", e);
+        console.error("Ошибка загрузки админов из базы:", e);
         adminList = [...SUPER_ADMINS];
-      }
-    }
-
-    async function saveAdmins() {
-      try {
-        const customAdmins = adminList.filter(id => !SUPER_ADMINS.includes(id));
-        await db.from('settings').update({ admin_ids: customAdmins }).eq('id', 1);
-      } catch (e) {
-        console.error("Ошибка сохранения админов:", e);
       }
     }
 
     async function loadSettings() {
       try {
-        const { data } = await db.from('settings').select('*').single();
-        if (data) settings = data;
+        const { data } = await db.from('settings').select('value').eq('key', 'payment_info').maybeSingle();
+        if (data && data.value) {
+          settings = data.value;
+        }
       } catch (e) {
         console.error("Ошибка настроек:", e);
       }
     }
 
     function showAuthPrompt() {
-      const idStr = prompt("Введите ваш Telegram ID для авторизации (например, для проверки админки на ПК):");
+      const idStr = prompt("Введите ваш Telegram ID для авторизации (для проверки на ПК):");
       if (!idStr) return;
       const id = Number(idStr.trim());
       if (isNaN(id) || id <= 0) {
@@ -622,7 +617,7 @@
           <div class="product-grid">
             ${products.map(p => `
               <div class="product-card">
-                ${p.image_url ? `<img src="${p.image_url}" class="product-img" alt="${p.title}">` : ''}
+                ${p.image ? `<img src="${p.image}" class="product-img" alt="${p.title}">` : ''}
                 <div class="product-header-row">
                   <div class="product-title">${p.title}</div>
                   <div class="product-price">${p.price} ₽</div>
@@ -724,7 +719,7 @@
                   <span style="font-size:12px; color:var(--text-muted);">${o.payment_method === 'online' ? '💳 Перевод' : '💵 Наличные'}</span>
                 </div>
                 <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">Покупатель: <b style="color:#fff;">${o.user_name}</b> (${o.user_phone})</div>
-                <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Сумма: <b style="color:#34d399;">${o.total_amount} ₽</b></div>
+                <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Сумма: <b style="color:#34d399;">${o.total_price || o.total_amount || 0} ₽</b></div>
                 <div style="font-size:12px; margin-bottom:8px;">Статус: <b>${o.status === 'pending' ? '⏳ Ожидает проверки' : o.status === 'paid' ? '✅ Оплачен' : '💵 Бронь'}</b></div>
                 ${o.status === 'pending' ? `
                   <button class="btn btn-success" style="padding:10px;" onclick="updateOrderStatus(${o.id}, 'paid')">Подтвердить оплату</button>
@@ -771,8 +766,8 @@
         alert("Этот администратор уже добавлен!");
         return;
       }
+      await db.from('shelf_admins').insert({ telegram_user_id: newId, is_super_admin: false });
       adminList.push(newId);
-      await saveAdmins();
       alert(`Администратор ${newId} успешно добавлен!`);
       switchTab('admin');
     }
@@ -783,14 +778,14 @@
         return;
       }
       if (confirm(`Удалить администратора ${id}?`)) {
+        await db.from('shelf_admins').delete().eq('telegram_user_id', id);
         adminList = adminList.filter(a => a !== id);
-        await saveAdmins();
         switchTab('admin');
       }
     }
 
     function addToCart(id, title, price) {
-      cart.push({ id, title, price });
+      cart.push({ product_id: id, id, title, price });
       document.getElementById('cart-count').innerText = cart.length;
       if (tg) tg.HapticFeedback?.impactOccurred('light');
     }
@@ -840,11 +835,12 @@
       const total = cart.reduce((s, i) => s + i.price, 0);
 
       await db.from('orders').insert({
-        user_id: currentUserId,
+        telegram_user_id: currentUserId,
+        username: currentUser?.username || name,
         user_name: name,
         user_phone: phone,
         items: cart,
-        total_amount: total,
+        total_price: total,
         payment_method: method,
         status: method === 'online' ? 'pending' : 'cash_reserved'
       });
@@ -874,7 +870,7 @@
     async function saveSettings() {
       const card = document.getElementById('set-card').value;
       const phone = document.getElementById('set-phone').value;
-      await db.from('settings').update({ card_number: card, phone_number: phone }).eq('id', 1);
+      await db.from('settings').upsert({ key: 'payment_info', value: { card_number: card, phone_number: phone } }, { onConflict: 'key' });
       alert('Реквизиты сохранены!');
       loadSettings();
     }
@@ -917,12 +913,12 @@
         return;
       }
 
-      let image_url = "";
+      let image = "";
       if (fileInput.files && fileInput.files[0]) {
-        image_url = await compressImage(fileInput.files[0]);
+        image = await compressImage(fileInput.files[0]);
       }
 
-      await db.from('products').insert({ title, price: parseFloat(price), image_url, description });
+      await db.from('products').insert({ title, price: parseFloat(price), image, description, is_available: true });
       alert('Товар добавлен!');
       switchTab('admin');
     }
