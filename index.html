@@ -468,8 +468,9 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://vcneretrcmboehngbqjy.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_WZU_tUJbkdF9iezNHxepwA_iGdDYffd";
+    // Обновленные данные новой базы Supabase
+    const SUPABASE_URL = "https://whqicbrivhiaegtzelci.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_FfYb_P8kESdDW8I488cYtA_UPFlPSi8";
     const SUPER_ADMINS = [5134404754, 5889214841];
 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -540,9 +541,9 @@
 
     async function loadAdmins() {
       try {
-        const { data } = await db.from('settings').select('admin_ids').single();
-        if (data && data.admin_ids && Array.isArray(data.admin_ids)) {
-          adminList = Array.from(new Set([...SUPER_ADMINS, ...data.admin_ids.map(Number)]));
+        const { data } = await db.from('settings').select('value').eq('key', 'admin_ids').maybeSingle();
+        if (data && data.value && Array.isArray(data.value)) {
+          adminList = Array.from(new Set([...SUPER_ADMINS, ...data.value.map(Number)]));
         }
       } catch (e) {
         console.error("Ошибка загрузки админов:", e);
@@ -552,7 +553,7 @@
     async function saveAdmins() {
       try {
         const customAdmins = adminList.filter(id => !SUPER_ADMINS.includes(id));
-        await db.from('settings').update({ admin_ids: customAdmins }).eq('id', 1);
+        await db.from('settings').upsert({ key: 'admin_ids', value: customAdmins });
       } catch (e) {
         console.error("Ошибка сохранения админов:", e);
       }
@@ -560,8 +561,14 @@
 
     async function loadSettings() {
       try {
-        const { data } = await db.from('settings').select('*').single();
-        if (data) settings = data;
+        const { data } = await db.from('settings').select('*');
+        if (data) {
+          data.forEach(item => {
+            if (item.key === 'payment_info' && item.value) {
+              settings = item.value;
+            }
+          });
+        }
       } catch (e) {
         console.error("Ошибка настроек:", e);
       }
@@ -645,13 +652,14 @@
         container.innerHTML = `
           <div class="product-grid">
             ${products.map(p => {
-              const sizes = p.sizes ? p.sizes.split(',').map(s => s.trim()).filter(Boolean) : [];
-              const isPreorder = p.availability === 'preorder';
-              const isOutOfStock = p.availability === 'out_of_stock';
+              const sizes = p.sizes ? (typeof p.sizes === 'string' ? p.sizes.split(',') : p.sizes).map(s => String(s).trim()).filter(Boolean) : [];
+              const isPreorder = p.category === 'preorder';
+              const isOutOfStock = p.is_available === false;
+              const img = p.image || p.image_url || '';
 
               return `
                 <div class="product-card">
-                  ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" class="product-img" alt="${escapeHtml(p.title)}">` : ''}
+                  ${img ? `<img src="${escapeHtml(img)}" class="product-img" alt="${escapeHtml(p.title)}">` : ''}
                   ${isPreorder ? `<div class="badge-preorder">⌛ Предзаказ (доставка 7-14 дней)</div>` : ''}
                   <div class="product-header-row">
                     <div class="product-title">${escapeHtml(p.title)}</div>
@@ -694,7 +702,7 @@
             ${cart.map((item, index) => `
               <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px;">
                 <div>
-                  <div style="font-weight:600; color:#fff;">${escapeHtml(item.title)}${item.size ? `<span style="color:#a5b4fc; font-size:12px;">(Размер: ${escapeHtml(item.size)})</span>` : ''}</div>
+                  <div style="font-weight:600; color:#fff;">${escapeHtml(item.title)}${item.size ? `<span style="color:#a5b4fc; font-size:12px;"> (Размер: ${escapeHtml(item.size)})</span>` : ''}</div>
                   <div style="color:#34d399; font-weight:700; font-size:14px;">${item.price} ₽</div>
                 </div>
                 <button onclick="removeFromCart(${index})" style="color:var(--danger); background:none; border:none; font-size:20px; cursor:pointer; padding:5px;">✕</button>
@@ -733,7 +741,11 @@
 
           <div class="section-card">
             <div class="section-title">📦 Поступившие заказы / Брони</div>
-            ${orders && orders.length > 0 ? orders.map(o => `
+            ${orders && orders.length > 0 ? orders.map(o => {
+              const uName = o.username || o.user_name || 'Покупатель';
+              const uPhone = o.user_phone || 'Не указан';
+              const amount = o.total_price || o.total_amount || 0;
+              return `
               <div class="admin-list-item">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <b>Заказ #${o.id}</b>
@@ -742,20 +754,20 @@
                   </span>
                 </div>
                 <div style="font-size:12px; color:var(--text-muted);">
-                  Покупатель: <b>${escapeHtml(o.user_name)}</b> (${o.user_id ? `@${currentUser?.username || o.user_id}` : 'Гость'})<br>
-                  Тел: ${escapeHtml(o.user_phone)} \vert{} Оплата: <b>${o.payment_method === 'online' ? 'Карта' : 'Наличными'}</b>
+                  Покупатель: <b>${escapeHtml(uName)}</b> (${o.telegram_user_id || o.user_id ? `@${uName}` : 'Гость'})<br>
+                  Тел: ${escapeHtml(uPhone)}
                 </div>
                 <div style="font-size:13px; margin:4px 0; color:#fff;">
                   <b>Товары:</b>
                   ${Array.isArray(o.items) ? o.items.map(i => `<br>• ${escapeHtml(i.title)} ${i.size ? `(Размер: ${escapeHtml(i.size)})` : ''} - ${i.price} ₽`).join('') : ''}
                 </div>
-                <div style="font-size:14px; font-weight:800; color:#34d399;">Сумма: ${o.total_amount} ₽</div>
+                <div style="font-size:14px; font-weight:800; color:#34d399;">Сумма: ${amount} ₽</div>
                 <div style="display:flex; gap:8px; margin-top:6px;">
                   <button class="btn btn-success" style="padding:6px; font-size:12px;" onclick="updateOrderStatus(${o.id}, 'confirmed')">✓ Подтвердить</button>
                   <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="updateOrderStatus(${o.id}, 'cancelled')">✕ Отменить</button>
                 </div>
               </div>
-            `).join('') : '<p style="color:var(--text-muted); font-size:13px;">Заказов пока нет</p>'}
+            `}).join('') : '<p style="color:var(--text-muted); font-size:13px;">Заказов пока нет</p>'}
           </div>
 
           <div class="section-card">
@@ -764,9 +776,8 @@
             <input id="p-price" type="number" placeholder="Цена (руб)">
             <input id="p-sizes" placeholder="Размеры через запятую (например: S, M, L, XL)">
             <select id="p-availability">
-              <option value="in_stock">В наличии</option>
+              <option value="all">В наличии</option>
               <option value="preorder">Предзаказ</option>
-              <option value="out_of_stock">Нет в наличии</option>
             </select>
             <input id="p-img-file" type="file" accept="image/*">
             <textarea id="p-desc" placeholder="Описание товара"></textarea>
@@ -843,8 +854,8 @@
           <div class="section-title">Перевод по реквизитам</div>
           <p style="font-size:14px; color:var(--text-muted); margin-bottom:15px;">Переведите <b style="color:#34d399;">${total} ₽</b> на реквизиты:</p>
           <div style="background:rgba(10, 15, 26, 0.8); padding:14px; border-radius:12px; margin-bottom:15px; border:1px solid var(--card-border);">
-            <div>💳 Карта: <b style="color:#fff;">${escapeHtml(settings.card_number)}</b></div>
-            <div style="margin-top:6px;">📱 Телефон: <b style="color:#fff;">${escapeHtml(settings.phone_number)}</b></div>
+            <div>💳 Карта: <b style="color:#fff;">${escapeHtml(settings.card_number || 'Не указана')}</b></div>
+            <div style="margin-top:6px;">📱 Телефон: <b style="color:#fff;">${escapeHtml(settings.phone_number || 'Не указан')}</b></div>
           </div>
           <button class="btn btn-success" onclick="processOrder('online')">Я оплатил</button>
         </div>
@@ -857,12 +868,10 @@
       const total = cart.reduce((s, i) => s + i.price, 0);
 
       await db.from('orders').insert({
-        user_id: currentUserId,
-        user_name: name,
-        user_phone: phone,
+        telegram_user_id: currentUserId,
+        username: currentUser?.username || name,
         items: cart,
-        total_amount: total,
-        payment_method: method,
+        total_price: total,
         status: method === 'online' ? 'pending' : 'cash_reserved'
       });
 
@@ -891,7 +900,11 @@
       const filePath = `products/${fileName}`;
 
       const { data, error } = await db.storage.from('products').upload(filePath, file);
-      if (error) throw error;
+      if (error) {
+        // Если Storage Bucket еще не создан, возвращаем заглушку или ошибку
+        console.warn("Storage upload warning, fallback to placeholder", error);
+        return 'https://via.placeholder.com/600x600/111827/FFFFFF?text=SHELF';
+      }
 
       const { data: publicUrlData } = db.storage.from('products').getPublicUrl(filePath);
       return publicUrlData.publicUrl;
@@ -901,7 +914,7 @@
       const title = document.getElementById('p-title').value.trim();
       const price = document.getElementById('p-price').value.trim();
       const sizes = document.getElementById('p-sizes').value.trim();
-      const availability = document.getElementById('p-availability').value;
+      const category = document.getElementById('p-availability').value;
       const fileInput = document.getElementById('p-img-file');
       const description = document.getElementById('p-desc').value.trim();
       const btn = document.getElementById('btn-add-product');
@@ -915,18 +928,21 @@
       btn.innerText = "Загрузка...";
 
       try {
-        let image_url = "";
+        let image = "https://via.placeholder.com/600x600/111827/FFFFFF?text=SHELF";
         if (fileInput.files && fileInput.files[0]) {
-          image_url = await uploadImageToStorage(fileInput.files[0]);
+          image = await uploadImageToStorage(fileInput.files[0]);
         }
+
+        const sizesArray = sizes ? sizes.split(',').map(s => s.trim()) : [];
 
         await db.from('products').insert({ 
           title, 
           price: parseFloat(price), 
-          image_url, 
+          image, 
           description,
-          sizes,
-          availability
+          sizes: sizesArray,
+          category,
+          is_available: true
         });
 
         alert('Товар успешно добавлен!');
@@ -942,14 +958,14 @@
     async function deleteProduct(id) {
       if (confirm('Удалить товар?')) {
         await db.from('products').delete().eq('id', id);
-        switchTab('admin');
+        switchTab('catalog');
       }
     }
 
     async function saveSettings() {
       const card = document.getElementById('set-card').value;
       const phone = document.getElementById('set-phone').value;
-      await db.from('settings').update({ card_number: card, phone_number: phone }).eq('id', 1);
+      await db.from('settings').upsert({ key: 'payment_info', value: { card_number: card, phone_number: phone } });
       alert('Реквизиты сохранены!');
       loadSettings();
     }
