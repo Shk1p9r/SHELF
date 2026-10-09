@@ -411,7 +411,9 @@
     <div id="user-header-status"></div>
   </div>
 
-  <div class="container" id="app-content"></div>
+  <div class="container" id="app-content">
+    <div class="empty-state"><p>Загрузка приложения...</p></div>
+  </div>
 
   <div class="bottom-nav-wrapper">
     <div class="bottom-nav">
@@ -455,8 +457,8 @@
     let adminList = [...SUPER_ADMINS];
     let cart = [];
     let settings = { card_number: '', phone_number: '' };
-    let cachedProducts = null;
-    let cachedOrders = null;
+    let cachedProducts = [];
+    let cachedOrders = [];
     let currentTab = 'catalog';
 
     async function init() {
@@ -468,19 +470,22 @@
 
       renderUserHeaderStatus();
 
-      // Фоновая загрузка данных для мгновенного отображения без лагов
-      Promise.all([
+      // Загружаем данные один раз при старте в фоне
+      await Promise.all([
         loadAdmins(),
         loadSettings(),
         preloadData()
-      ]).then(() => {
-        if (currentUserId > 0 && adminList.includes(currentUserId)) {
-          document.getElementById('nav-admin').style.display = 'flex';
-        } else {
-          document.getElementById('nav-admin').style.display = 'none';
-        }
-        switchTab(currentTab);
-      });
+      ]);
+
+      // Проверяем права админа и выводим кнопку внизу
+      if (currentUserId > 0 && adminList.includes(currentUserId)) {
+        document.getElementById('nav-admin').style.display = 'flex';
+      } else {
+        document.getElementById('nav-admin').style.display = 'none';
+      }
+
+      // Отрисовываем ту вкладку, которая была изначально активна (без авто-сброса)
+      switchTab(currentTab);
     }
 
     async function preloadData() {
@@ -492,7 +497,7 @@
         if (prodRes.data) cachedProducts = prodRes.data;
         if (ordRes.data) cachedOrders = ordRes.data;
       } catch (e) {
-        console.error("Ошибка предзагрузки:", e);
+        console.error("Ошибка загрузки данных:", e);
       }
     }
 
@@ -614,8 +619,8 @@
       const container = document.getElementById('app-content');
 
       if (tab === 'catalog') {
-        const products = cachedProducts || [];
-        if (products.length === 0) {
+        const products = cachedProducts;
+        if (!products || products.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
               <div class="empty-icon">✨</div>
@@ -694,8 +699,8 @@
           return;
         }
 
-        const orders = cachedOrders || [];
-        const products = cachedProducts || [];
+        const orders = cachedOrders;
+        const products = cachedProducts;
 
         container.innerHTML = `
           <div class="section-card">
@@ -859,7 +864,7 @@
 
       cart = [];
       document.getElementById('cart-count').innerText = '0';
-      await preloadData(); // обновить кэш заказов
+      await preloadData();
 
       if (method === 'online') {
         document.getElementById('app-content').innerHTML = `
