@@ -468,7 +468,6 @@
   </div>
 
   <script>
-    // Обновленные данные новой базы Supabase
     const SUPABASE_URL = "https://whqicbrivhiaegtzelci.supabase.co";
     const SUPABASE_KEY = "sb_publishable_FfYb_P8kESdDW8I488cYtA_UPFlPSi8";
     const SUPER_ADMINS = [5134404754, 5889214841];
@@ -708,7 +707,7 @@
                 <button onclick="removeFromCart(${index})" style="color:var(--danger); background:none; border:none; font-size:20px; cursor:pointer; padding:5px;">✕</button>
               </div>
             `).join('')}
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; font-size:18px; font-weight:800; color:#fff;">
+            <div style="display:flex; justify-space-between; align-items:center; margin-top:20px; font-size:18px; font-weight:800; color:#fff;">
               <span>Итого:</span>
               <span style="color:#34d399;">${total} ₽</span>
             </div>
@@ -901,7 +900,6 @@
 
       const { data, error } = await db.storage.from('products').upload(filePath, file);
       if (error) {
-        // Если Storage Bucket еще не создан, возвращаем заглушку или ошибку
         console.warn("Storage upload warning, fallback to placeholder", error);
         return 'https://via.placeholder.com/600x600/111827/FFFFFF?text=SHELF';
       }
