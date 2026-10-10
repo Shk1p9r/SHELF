@@ -88,17 +88,6 @@
       object-fit: cover;
     }
 
-    .btn-login-sm {
-      background: var(--accent-gradient);
-      color: #fff;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
     .container {
       padding: 16px;
       max-width: 500px;
@@ -448,9 +437,10 @@
       border-radius: 10px;
       border: 1px solid var(--card-border);
     }
-      .btn:disabled { opacity: .5; cursor: default; }
+
+    .btn:disabled { opacity: .5; cursor: default; }
   </style>
-<base target="_blank">
+  <base target="_blank">
 </head>
 <body>
 
@@ -492,8 +482,9 @@
   <script>
     const SUPABASE_URL = "https://whqicbrivhiaegtzelci.supabase.co";
     const SUPABASE_KEY = "sb_publishable_FfYb_P8kESdDW8I488cYtA_UPFlPSi8";
-    // Имя функции = имя папки в supabase/functions/. Если у вас другое — поменяйте здесь.
     const API_URL = SUPABASE_URL + "/functions/v1/shelf-api";
+    
+    const SUPER_ADMINS = [5134404754, 5889214841];
     const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
     const STATUS = { pending: '⏳ Ожидает проверки', cash_reserved: '💵 Бронь (наличные)', confirmed: '✅ Подтверждён', cancelled: '❌ Отменён' };
 
@@ -515,6 +506,12 @@
     const safeUrl = u => /^https:\/\//i.test(u || '') ? u : '';
     const money = n => new Intl.NumberFormat('ru-RU').format(Number(n) || 0);
     const notify = m => (tg && tg.isVersionAtLeast?.('6.2')) ? tg.showAlert(m) : alert(m);
+
+    // Автоматическая подхватка прав главного админа
+    if (tgUser && SUPER_ADMINS.includes(Number(tgUser.id))) {
+      isAdmin = true;
+      isSuper = true;
+    }
 
     async function api(action, payload = {}) {
       if (!initData) throw new Error('Откройте магазин через Telegram.');
@@ -538,11 +535,17 @@
       if (s.data?.value) settings = s.data.value;
     }
 
-    async function loadAdmin() {
-      const [o, a] = await Promise.all([api('admin_list_orders'), api('admin_list_admins')]);
-      orders = o.orders || [];
-      admins = a.admins || [];
-      isSuper = !!admins.find(x => Number(x.telegram_user_id) === Number(tgUser?.id))?.is_super_admin;
+    async function loadAdminDataSafe() {
+      try {
+        const [o, a] = await Promise.all([
+          api('admin_list_orders').catch(() => ({ orders: [] })),
+          api('admin_list_admins').catch(() => ({ admins: [] }))
+        ]);
+        orders = o.orders || [];
+        admins = a.admins || [];
+      } catch (e) {
+        console.warn('Не удалось загрузить полные данные админа:', e);
+      }
     }
 
     function loadCart() {
@@ -576,13 +579,26 @@
       renderHeader();
       loadCart();
       try { await loadPublic(); syncCart(); } catch (e) { console.error(e); loadFailed = true; }
+      
+      // Проверка прав администратора
       if (initData) {
-        try { isAdmin = !!(await api('admin_check')).isAdmin; }
-        catch (e) { adminCheckError = (e && e.message) || 'Ошибка проверки прав.'; console.warn(e); }
-      } else {
-        adminCheckError = 'Откройте магазин через Telegram — в браузере авторизация недоступна.';
+        try {
+          const res = await api('admin_check').catch(() => null);
+          if (res) isAdmin = !!res.isAdmin;
+        } catch (e) { 
+          adminCheckError = (e && e.message) || 'Ошибка проверки прав.'; 
+        }
       }
-      $('nav-admin').style.display = 'flex';
+
+      if (tgUser && SUPER_ADMINS.includes(Number(tgUser.id))) {
+        isAdmin = true;
+        isSuper = true;
+      }
+
+      if (isAdmin) {
+        $('nav-admin').style.display = 'flex';
+      }
+
       switchTab('catalog');
     }
 
@@ -633,6 +649,7 @@
 
     function addColorPickerField(hex = '#6366f1', name = '') {
       const container = document.getElementById('colors-container');
+      if (!container) return;
       const item = document.createElement('div');
       item.className = 'color-item';
       item.style.display = 'flex';
@@ -692,11 +709,10 @@
               <div class="product-title">${esc(p.title)}</div>
               <div class="product-price">${money(p.price)} ₽</div>
             </div>
-            <div class="product-desc">${esc(p.description || '')}</div>
-            ${sizes.length ? `<div class="options-row"><div class="option-group-label">Размер:</div>${sizes.map(s =>
+            <div class="product-desc">${esc(p.description \vert{}\vert{} '')}</div>${sizes.length ? `<div class="options-row"><div class="option-group-label">Размер:</div>${sizes.map(s =>
               `<div class="size-chip ${cur.size === s ? 'selected' : ''}" data-v="${esc(s)}" onclick="pickOption(${id}, 'size', this)">${esc(s)}</div>`).join('')}</div>` : ''}
             ${colors.length ? `<div class="options-row"><div class="option-group-label">Цвет:</div>${colors.map(cl =>
-              `<div class="color-dot ${cur.color === cl.hex ? 'selected' : ''}" data-v="${esc(cl.hex)}" style="background-color:${safeColor(cl.hex)};" title="${esc(cl.name || cl.hex)}" onclick="pickOption(${id}, 'color', this)"></div>`).join('')}</div>` : ''}
+              `<div class="color-dot ${cur.color === cl.hex ? 'selected' : ''}" data-v="${esc(cl.hex)}" style="background-color:${safeColor(cl.hex)};" title="${esc(cl.name \vert{}\vert{} cl.hex)}" onclick="pickOption(${id}, 'color', this)"></div>`).join('')}</div>` : ''}
             <button class="btn" ${avail ? '' : 'disabled'} onclick="addToCart(${id}, this)">${avail ? 'В корзину' : 'Нет в наличии'}</button>
           </div>`;
       }).join('')}</div>${getFooterHTML()}`;
@@ -715,7 +731,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--card-border); padding-bottom:10px;">
               <div>
                 <div style="font-weight:600; color:#fff;">${esc(item.title)}</div>
-                <div style="font-size:12px; color:var(--text-muted);">Размер: ${esc(item.size || '—')}${item.color ? ` | Цвет: <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${safeColor(item.color)};"></span>` : ''}</div>
+                <div style="font-size:12px; color:var(--text-muted);">Размер: ${esc(item.size \vert{}\vert{} '—')}${item.color ? ` | Цвет: <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${safeColor(item.color)};"></span>` : ''}</div>
                 <div style="color:#34d399; font-weight:700; font-size:14px; margin-top:2px;">${money(item.price)} ₽</div>
               </div>
               <button onclick="removeFromCart(${index})" style="color:var(--danger); background:none; border:none; font-size:20px; cursor:pointer; padding:5px;">✕</button>
@@ -743,7 +759,7 @@
     }
 
     function readCheckout() {
-      if ($('u-name')) { checkout.name = $('u-name').value.trim(); checkout.phone = $('u-phone').value.trim(); }
+      if ($('u-name')) { checkout.name = $('u-name').value.trim(); checkout.phone =$('u-phone').value.trim(); }
       if (!checkout.name) { notify('Укажите имя.'); return false; }
       if (checkout.phone.replace(/\D/g, '').length < 5) { notify('Укажите телефон для связи.'); return false; }
       return true;
@@ -798,25 +814,24 @@
     }
 
     async function openAdmin(c) {
-      if (!initData) {
-        c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">📱</div><h3 style="color:#fff; margin-bottom:8px;">Нужен Telegram</h3><p style="font-size:13px; color:var(--text-muted);">${esc(adminCheckError || 'Откройте магазин как Mini App внутри Telegram.')}</p></div>${getFooterHTML()}`;
-        return;
+      if (tgUser && SUPER_ADMINS.includes(Number(tgUser.id))) {
+        isAdmin = true;
+        isSuper = true;
       }
+
       if (!isAdmin) {
-        c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">🔒</div><h3 style="color:#fff; margin-bottom:8px;">Доступ ограничен</h3><p style="font-size:13px; color:var(--text-muted);">${esc(adminCheckError || 'Ваш Telegram ID не найден в списке администраторов. Попросите владельца добавить вас в разделе «Администраторы».')}</p></div>${getFooterHTML()}`;
+        c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">🔒</div><h3 style="color:#fff; margin-bottom:8px;">Доступ ограничен</h3><p style="font-size:13px; color:var(--text-muted);">${esc(adminCheckError || 'Ваш Telegram ID не найден в списке администраторов.')}</p></div>${getFooterHTML()}`;
         return;
       }
-      c.innerHTML = '<div class="empty-state"><p>Загрузка...</p></div>';
-      try { await loadAdmin(); } catch (e) {
-        if (currentTab === 'admin') c.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(e.message)}</p></div>`;
-        return;
-      }
+
+      c.innerHTML = '<div class="empty-state"><p>Загрузка панельки...</p></div>';
+      await loadAdminDataSafe();
       if (currentTab === 'admin') renderAdmin(c);
     }
 
     function renderAdmin(c) {
       const payLabel = o => (o.payment_method || (o.status === 'cash_reserved' ? 'cash' : 'online')) === 'cash' ? '💵 Наличные' : '💳 Перевод';
-      const card = 'background:rgba(10,15,26,0.6); border:1px solid var(--card-border); padding:12px; margin-bottom:10px; border-radius:12px;';
+      const cardStyle = 'background:rgba(10,15,26,0.6); border:1px solid var(--card-border); padding:12px; margin-bottom:10px; border-radius:12px;';
       c.innerHTML = `
         <div class="section-card">
           <div class="section-title">🔑 Реквизиты оплаты</div>
@@ -841,7 +856,7 @@
         <div class="section-card">
           <div class="section-title">📦 Заказы</div>
           ${orders.map(o => `
-            <div style="${card}">
+            <div style="${cardStyle}">
               <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                 <b>Заказ #${Number(o.id)}</b>
                 <span style="font-size:12px; color:var(--text-muted);">${payLabel(o)}</span>
@@ -850,8 +865,7 @@
               <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">Покупатель: <b style="color:#fff;">${esc(o.user_name)}</b> (${esc(o.user_phone)})</div>
               <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">${(o.items || []).map(i => `${esc(i.title)} (${esc(i.size || '—')}${i.color ? ', ' + esc(i.color) : ''})`).join('; ')}</div>
               <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Сумма: <b style="color:#34d399;">${money(o.total_price)} ₽</b></div>
-              <div style="font-size:12px; margin-bottom:8px;">Статус: <b>${esc(STATUS[o.status] || o.status)}</b></div>
-              ${o.status === 'pending' || o.status === 'cash_reserved' ? `
+              <div style="font-size:12px; margin-bottom:8px;">Статус: <b>${esc(STATUS[o.status] \vert{}\vert{} o.status)}</b></div>${o.status === 'pending' || o.status === 'cash_reserved' ? `
                 <button class="btn btn-success" style="padding:10px;" onclick="setOrderStatus(${Number(o.id)}, 'confirmed')">Подтвердить</button>
                 <button class="btn btn-danger" style="padding:10px; margin-top:8px;" onclick="setOrderStatus(${Number(o.id)}, 'cancelled')">Отменить</button>` : ''}
             </div>`).join('') || '<p style="color:var(--text-muted); font-size:13px;">Заказов пока нет</p>'}
@@ -897,7 +911,7 @@
 
     function saveSettings() {
       return adminAction(async () => {
-        const card_number = $('set-card').value.trim(), phone_number = $('set-phone').value.trim();
+        const card_number = $('set-card').value.trim(), phone_number =$('set-phone').value.trim();
         await api('admin_save_settings', { card_number, phone_number });
         settings = { card_number, phone_number };
         notify('Реквизиты сохранены!');
