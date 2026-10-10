@@ -25,9 +25,7 @@
       --radius-md: 14px;
       --radius-sm: 10px;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-color);
@@ -40,7 +38,6 @@
         radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
       background-attachment: fixed;
     }
-
     .header {
       position: sticky; top: 0; z-index: 90;
       padding: 12px 16px;
@@ -49,14 +46,12 @@
       border-bottom: 1px solid var(--card-border);
       display: flex; justify-content: space-between; align-items: center;
     }
-
     .brand-title {
       font-size: 20px; font-weight: 800; letter-spacing: 3px;
       background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       text-transform: uppercase;
     }
-
     .user-pill {
       display: flex; align-items: center; gap: 8px;
       background: rgba(255, 255, 255, 0.05);
@@ -65,10 +60,8 @@
       font-size: 12px; color: var(--text-muted);
     }
     .user-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
-
     .container { padding: 16px; max-width: 500px; margin: 0 auto; animation: fadeIn 0.35s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
     .product-grid { display: flex; flex-direction: column; gap: 16px; }
     .product-card {
       background: var(--card-bg);
@@ -79,13 +72,11 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     }
-
     .product-img {
       width: 100%; height: 240px; object-fit: cover;
       border-radius: var(--radius-md); margin-bottom: 12px;
       background: rgba(255, 255, 255, 0.03);
     }
-
     .product-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 10px; }
     .product-title { font-size: 18px; font-weight: 700; color: #fff; }
     .product-price {
@@ -96,7 +87,6 @@
       white-space: nowrap;
     }
     .product-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; }
-
     .options-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
     .option-group-label { font-size: 12px; color: var(--text-muted); width: 100%; margin-bottom: -4px; }
     .size-chip {
@@ -111,7 +101,6 @@
       display: inline-block; transition: transform 0.2s;
     }
     .color-dot.selected { border-color: #fff; transform: scale(1.15); }
-
     .btn {
       width: 100%; padding: 14px; border: none;
       border-radius: var(--radius-md);
@@ -129,7 +118,6 @@
     .btn-success { background: var(--success-gradient); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35); }
     .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3); }
     .btn:disabled { opacity: .5; cursor: default; }
-
     .bottom-nav-wrapper {
       position: fixed; bottom: 20px; left: 0; right: 0;
       display: flex; justify-content: center; z-index: 100; padding: 0 16px;
@@ -155,7 +143,6 @@
       background: var(--accent); color: white; font-size: 10px; font-weight: 800;
       padding: 2px 7px; border-radius: 10px;
     }
-
     .app-footer {
       margin-top: 35px; padding: 20px 10px;
       border-top: 1px solid var(--card-border);
@@ -167,7 +154,6 @@
     .footer-link:hover { color: #fff; }
     .footer-legal-links { display: flex; justify-content: center; gap: 12px; font-size: 11px; opacity: 0.7; }
     .footer-credits { font-size: 11px; color: #64748b; margin-top: 4px; }
-
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
@@ -180,7 +166,6 @@
       color: var(--text-main); font-size: 13px; line-height: 1.6;
     }
     .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; color: #fff; }
-
     input, select, textarea {
       width: 100%; padding: 14px; margin-bottom: 12px;
       background: rgba(10, 15, 26, 0.7);
@@ -193,17 +178,14 @@
       outline: none; border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
     }
-
     .section-card {
       background: var(--card-bg); border: 1px solid var(--card-border);
       border-radius: var(--radius-lg); padding: 18px;
       margin-bottom: 16px; backdrop-filter: blur(12px);
     }
     .section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: #fff; }
-
     .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
     .empty-icon { font-size: 48px; margin-bottom: 12px; }
-
     .admin-list-item {
       display: flex; justify-content: space-between; align-items: center;
       background: rgba(10, 15, 26, 0.6); padding: 10px 14px;
@@ -253,7 +235,8 @@
     const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
     const STATUS = { pending: '⏳ Ожидает проверки', cash_reserved: '💵 Бронь (наличные)', confirmed: '✅ Подтверждён', cancelled: '❌ Отменён' };
 
-    // FIX: убран хардкод SUPER_ADMINS — права полностью определяются сервером через admin_check.
+    // 🔴 ВПИШИ СВОЙ ID И ID КЕНТА ЗДЕСЬ (числа, через запятую)
+    const OWNER_IDS = [5134404001, 5134404002];
 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
     const tg = window.Telegram?.WebApp;
@@ -271,9 +254,15 @@
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const safeColor = c => /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : 'transparent';
     const safeUrl = u => /^https:\/\//i.test(u || '') ? u : '';
-    const moneyFmt = new Intl.NumberFormat('ru-RU'); // FIX: переиспользуем форматтер.
+    const moneyFmt = new Intl.NumberFormat('ru-RU');
     const money = n => moneyFmt.format(Number(n) || 0);
     const notify = m => (tg && tg.isVersionAtLeast?.('6.2')) ? tg.showAlert(m) : alert(m);
+
+    // 🔴 Мгновенный фолбэк: владельцы видят панель сразу, даже до ответа сервера
+    if (tgUser && OWNER_IDS.includes(Number(tgUser.id))) {
+      isAdmin = true;
+      isSuper = true;
+    }
 
     async function api(action, payload = {}) {
       if (!initData) throw new Error('Откройте магазин через Telegram.');
@@ -297,13 +286,11 @@
       if (s.data?.value) settings = s.data.value;
     }
 
-    // FIX: возвращаем флаг ошибки, чтобы показать её в UI, а не молча пустоту.
     async function loadAdminDataSafe() {
       try {
         const [o, a] = await Promise.all([
           api('admin_list_orders'),
           api('admin_list_admins').catch((e) => {
-            // admin_list_admins может быть недоступен не-супер-админу — это не фатально.
             console.warn('admin_list_admins:', e.message);
             return { admins: [] };
           })
@@ -347,6 +334,10 @@
     async function init() {
       renderHeader();
       loadCart();
+
+      // 🔴 Сразу показываем панель владельцам, не дожидаясь сервера
+      if (isAdmin) $('nav-admin').style.display = 'flex';
+
       try { await loadPublic(); syncCart(); } catch (e) { console.error(e); loadFailed = true; }
 
       if (initData) {
@@ -360,6 +351,12 @@
         }
       } else {
         adminCheckError = 'Откройте магазин через Telegram — в браузере авторизация недоступна.';
+      }
+
+      // 🔴 Ещё раз: владельцы всегда админы
+      if (tgUser && OWNER_IDS.includes(Number(tgUser.id))) {
+        isAdmin = true;
+        isSuper = true;
       }
 
       if (isAdmin) $('nav-admin').style.display = 'flex';
@@ -389,7 +386,6 @@
       const modal = document.getElementById('legal-modal');
       const title = document.getElementById('modal-legal-title');
       const content = document.getElementById('modal-legal-content');
-
       if (type === 'terms') {
         title.innerText = 'Пользовательское соглашение';
         content.innerHTML = `
@@ -406,7 +402,6 @@
       }
       modal.style.display = 'flex';
     }
-
     function closeLegalModal() {
       document.getElementById('legal-modal').style.display = 'none';
     }
@@ -523,7 +518,6 @@
         </div>`;
     }
 
-    // FIX: добавлена проверка, что оба поля присутствуют, прежде чем читать .value.
     function readCheckout() {
       const nameEl = $('u-name'), phoneEl = $('u-phone');
       if (nameEl && phoneEl) {
@@ -584,18 +578,11 @@
     }
 
     async function openAdmin(c) {
-      // FIX: вернули проверку на отсутствие initData — понятное сообщение вместо кривого.
-      if (!initData) {
-        c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">📱</div><h3 style="color:#fff; margin-bottom:8px;">Нужен Telegram</h3><p style="font-size:13px; color:var(--text-muted);">${esc(adminCheckError || 'Откройте магазин как Mini App внутри Telegram.')}</p></div>${getFooterHTML()}`;
-        return;
-      }
-
       if (!isAdmin) {
         c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">🔒</div><h3 style="color:#fff; margin-bottom:8px;">Доступ ограничен</h3><p style="font-size:13px; color:var(--text-muted);">${esc(adminCheckError || 'Ваш Telegram ID не найден в списке администраторов.')}</p></div>${getFooterHTML()}`;
         return;
       }
-
-      c.innerHTML = '<div class="empty-state"><p>Загрузка панельки...</p></div>';
+      c.innerHTML = '<div class="empty-state"><p>Загрузка панели...</p></div>';
       const result = await loadAdminDataSafe();
       if (!result.ok) {
         c.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(result.error)}</p><button class="btn btn-secondary" onclick="switchTab('admin')">Повторить</button></div>${getFooterHTML()}`;
@@ -625,7 +612,7 @@
               <span style="font-size:13px; font-weight:600;">ID: ${id}${a.is_super_admin ? ' 👑 (Владелец)' : ''}</span>
               ${isSuper && !a.is_super_admin ? `<button class="btn btn-danger" style="width:auto; padding:4px 10px; font-size:11px;" onclick="removeAdmin(${id})">Удалить</button>` : ''}
             </div>`;
-          }).join('') : '<p style="color:var(--text-muted); font-size:13px;">${isSuper ? "Нет администраторов" : "Список доступен только владельцу"}</p>'}
+          }).join('') : '<p style="color:var(--text-muted); font-size:13px;">Нет данных</p>'}
         </div>
 
         <div class="section-card">
@@ -715,7 +702,6 @@
       return adminAction(async () => { await api('admin_delete_product', { product_id: id }); await loadPublic(); });
     }
 
-    // FIX: ограничиваем итоговый размер файла и по высоте тоже.
     function compressImage(file) {
       return new Promise((resolve, reject) => {
         const img = new Image(), url = URL.createObjectURL(file);
@@ -742,7 +728,6 @@
       const { upload } = await api('admin_create_image_upload', { file_name: file.name || 'photo.jpg', content_type: 'image/jpeg' });
       const { error } = await db.storage.from('products').uploadToSignedUrl(upload.path, upload.token, blob, { contentType: 'image/jpeg' });
       if (error) throw new Error(error.message);
-      // FIX: серверная пост-проверка magic bytes — если файл не картинка, сервер его удалит и вернёт ошибку.
       try {
         await api('admin_verify_image_upload', { path: upload.path });
       } catch (e) {
