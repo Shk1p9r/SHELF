@@ -502,7 +502,7 @@
     const initData = tg?.initData || '';
     const tgUser = tg?.initDataUnsafe?.user || null;
 
-    let isAdmin = false, isSuper = false, loadFailed = false, busy = false, currentTab = 'catalog';
+    let isAdmin = false, isSuper = false, loadFailed = false, busy = false, currentTab = 'catalog', adminCheckError = '';
     let cart = [], products = [], orders = [], admins = [];
     let settings = { card_number: '', phone_number: '' };
     let selectedProductOptions = {};
@@ -576,9 +576,12 @@
       loadCart();
       try { await loadPublic(); syncCart(); } catch (e) { console.error(e); loadFailed = true; }
       if (initData) {
-        try { isAdmin = !!(await api('admin_check')).isAdmin; } catch (e) { console.warn(e); }
+        try { isAdmin = !!(await api('admin_check')).isAdmin; }
+        catch (e) { adminCheckError = (e && e.message) || 'Ошибка проверки прав.'; console.warn(e); }
+      } else {
+        adminCheckError = 'Откройте магазин через Telegram — в браузере авторизация недоступна.';
       }
-      $('nav-admin').style.display = isAdmin ? 'flex' : 'none';
+      $('nav-admin').style.display = 'flex';
       switchTab('catalog');
     }
 
@@ -794,8 +797,12 @@
     }
 
     async function openAdmin(c) {
+      if (!initData) {
+        c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">📱</div><h3 style="color:#fff; margin-bottom:8px;">Нужен Telegram</h3><p style="font-size:13px; color:var(--text-muted);">${esc(adminCheckError || 'Откройте магазин как Mini App внутри Telegram.')}</p></div>${getFooterHTML()}`;
+        return;
+      }
       if (!isAdmin) {
-        c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">🔒</div><h3 style="color:#fff; margin-bottom:8px;">Доступ ограничен</h3><p style="font-size:13px; color:var(--text-muted);">Раздел доступен только администраторам.</p></div>${getFooterHTML()}`;
+        c.innerHTML = `<div class="section-card" style="text-align:center; padding:30px 20px;"><div class="empty-icon">🔒</div><h3 style="color:#fff; margin-bottom:8px;">Доступ ограничен</h3><p style="font-size:13px; color:var(--text-muted);">${esc(adminCheckError || 'Ваш Telegram ID не найден в списке администраторов. Попросите владельца добавить вас в разделе «Администраторы».')}</p></div>${getFooterHTML()}`;
         return;
       }
       c.innerHTML = '<div class="empty-state"><p>Загрузка...</p></div>';
